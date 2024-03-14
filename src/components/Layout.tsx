@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Header from './Header';
 import PageHeader from './PageHeader';
 import { Button } from './ui/button';
@@ -6,9 +6,9 @@ import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
 export default function Layout({ children, currentPath, prevPath }: {
-    children: React.ReactNode;
-    currentPath: { arabicName: string, path: string; };
-    prevPath: { arabicName: string, path: string; };
+    children: ReactNode;
+    currentPath?: { arabicName: string, path: string; };
+    prevPath?: { arabicName: string, path: string; };
 })
 {
     const router = useRouter();

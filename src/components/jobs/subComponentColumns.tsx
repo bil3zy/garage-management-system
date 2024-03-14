@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, RowData } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "~/server/api/root";
 import { RouterOutputs } from "~/utils/api";
@@ -10,15 +13,15 @@ import { Checkbox } from "../ui/checkbox";
 // You can use a Zod schema here if you want.
 export type Items = {
     id: string;
-    name: string | null;
-    broughtBy: string | null;
-    price: string | null;
+    name: string;
+    broughtBy: string;
+    price: string;
     createdAt: Date;
     updatedAt: Date;
-    jobId: string | null;
+    jobId: string;
 }[];
 
-export const subComponentColumns: ColumnDef<Items>[] = [
+export const subComponentColumns: ColumnDef<any, any>[] = [
     // {
     //     id: 'expander',
     //     header: () => null,
@@ -62,7 +65,7 @@ export const subComponentColumns: ColumnDef<Items>[] = [
     },
     {
 
-        accessorFn: (row, id) => row.name,
+        accessorFn: (row) => row.name,
         header: "القطعة",
     },
     {

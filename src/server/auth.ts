@@ -34,13 +34,13 @@ declare module "next-auth" {
     };
   }
 
-  // interface User
-  // {
-  //   username: string;
-  //   scope: string;
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User
+  {
+    username: string;
+    scope: string;
+    // ...other properties
+    // role: UserRole;
+  }
 }
 
 /**
@@ -98,7 +98,7 @@ export const authOptions: NextAuthOptions = {
           // Add logic here to look up the user from the credentials supplied
           // const user = { id: "1", name: "J Smith", email: "jsmith@example.com" };
 
-          const hashedPassword = bcrypt.hashSync(credentials?.password as string, 10);
+          const hashedPassword = bcrypt.hashSync(credentials!.password, 10);
 
           const account = await db.account.findFirst({
             where: {

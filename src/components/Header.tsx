@@ -3,8 +3,8 @@ import React from 'react';
 import { Button } from './ui/button';
 import { MdArrowBackIosNew } from "react-icons/md";
 export default function Header({ prevPath, currentPath }: {
-    prevPath: { arabicName: string, path: string; };
-    currentPath: { arabicName: string, path: string; };
+    prevPath?: { arabicName: string, path: string; };
+    currentPath?: { arabicName: string, path: string; };
 })
 {
     const router = useRouter();

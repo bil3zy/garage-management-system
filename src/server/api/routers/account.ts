@@ -24,7 +24,7 @@ export const accountRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) =>
     {
 
-        const hashedPassword: string = bcrypt.hashSync(input?.password as string, 10);
+        const hashedPassword: string = bcrypt.hashSync(input?.password, 10);
 
         const createdUser = await ctx.db.user.create({
             data: {

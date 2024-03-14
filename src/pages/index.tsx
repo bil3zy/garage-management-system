@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Layout from "~/components/Layout";
-import JobsPage from "~/components/jobs/jobsPage";
+import JobsPage from "~/components/jobs/JobsPage";
 
 import { api } from "~/utils/api";
 
@@ -25,7 +25,7 @@ export default function Home()
         <meta name="description" content="ورشتي هي منظومة لمتابعة أعمال ورش الصيانة." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
+      <Layout >
         <JobsPage />
       </Layout>
       {/* <main className=" flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">

@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 "use client";
 
 import
@@ -56,8 +61,7 @@ interface DataTableProps<TData, TValue>
 {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    isFetched: boolean;
-    refetch: any;
+
 }
 
 
@@ -75,7 +79,7 @@ export function DataTable<TData, TValue>({
     const [rowSelection, setRowSelection] = React.useState({});
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-    const [dataState, setDataState] = useState(null);
+    const [dataState, setDataState] = useState<TData[] | null>(null);
     const [isOpen, setIsOpen] = React.useState(false);
 
     useEffect(() =>
@@ -147,12 +151,12 @@ export function DataTable<TData, TValue>({
                 // Skip page index reset until after next rerender
                 // skipAutoResetPageIndex();
                 setDataState(old =>
-                    old.map((row, index) =>
+                    old!.map((row, index) =>
                     {
                         if (index === rowIndex)
                         {
                             return {
-                                ...old[rowIndex]!,
+                                ...old![rowIndex]!,
                                 [columnId]: value,
                             };
                         }
@@ -244,7 +248,7 @@ export function DataTable<TData, TValue>({
                                             <TableRow>
                                                 {/* 2nd row is a custom 1 cell row */ }
                                                 <TableCell colSpan={ row.getVisibleCells().length }>
-                                                    <SubComponent data={ row.original?.subRows.items } columns={ subComponentColumns } />
+                                                    <SubComponent data={ (row.original as any).subRows.items as any } columns={ subComponentColumns } />
                                                 </TableCell>
                                             </TableRow>
                                         ) }

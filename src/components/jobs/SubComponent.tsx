@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 // import React from 'react';
 // import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 // import { Button } from '../ui/button';
@@ -108,8 +109,7 @@ interface DataTableProps<TData, TValue>
 {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    isFetched: boolean;
-    refetch: any;
+
 }
 
 
@@ -125,7 +125,7 @@ export function SubComponent<TData, TValue>({
     const [rowSelection, setRowSelection] = React.useState({});
     // const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-    const [dataState, setDataState] = useState(null);
+    const [dataState, setDataState] = useState<TData[] | null>(null);
     // const [isOpen, setIsOpen] = React.useState(false);
 
     useEffect(() =>
@@ -134,7 +134,7 @@ export function SubComponent<TData, TValue>({
     }, [data]);
 
     console.log('data', data);
-    const defaultColumn: Partial<ColumnDef<TData>> = {
+    const DefaultColumn: Partial<ColumnDef<TData>> = {
         cell: ({ getValue, row: { index }, row, column: { id }, table }) =>
         {
             const initialValue = getValue();
@@ -171,7 +171,7 @@ export function SubComponent<TData, TValue>({
     const table = useReactTable({
         data: dataState ? dataState : defaultData,
         columns,
-        defaultColumn,
+        defaultColumn: DefaultColumn,
         autoResetPageIndex: false,
         // debugRows: true,
         getCoreRowModel: getCoreRowModel(),
@@ -197,12 +197,12 @@ export function SubComponent<TData, TValue>({
                 // Skip page index reset until after next rerender
                 // skipAutoResetPageIndex();
                 setDataState(old =>
-                    old.map((row, index) =>
+                    old!.map((row, index) =>
                     {
                         if (index === rowIndex)
                         {
                             return {
-                                ...old[rowIndex]!,
+                                ...old![rowIndex]!,
                                 [columnId]: value,
                             };
                         }

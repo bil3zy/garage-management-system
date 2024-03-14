@@ -9,10 +9,11 @@ export default function JobsPage()
     console.log(data);
     return (
         <div className="container mx-auto py-10">
+
             <DataTable
                 columns={ columns }
-                data={ data }
-            />
+                data={ data ?? [] } />
+
         </div>
     );
 }
