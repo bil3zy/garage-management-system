@@ -7,10 +7,13 @@ import
   type NextAuthOptions,
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
+import bcrypt from 'bcrypt';
 
 import { env } from "~/env";
 import { db } from "~/server/db";
 import CredentialsProvider from "next-auth/providers/credentials";
+
+import { JWT } from "next-auth/jwt";
 
 
 /**
@@ -24,12 +27,17 @@ declare module "next-auth" {
   {
     user: DefaultSession["user"] & {
       id: string;
+      username: string;
+      scope: string;
       // ...other properties
       // role: UserRole;
     };
   }
 
-  // interface User {
+  // interface User
+  // {
+  //   username: string;
+  //   scope: string;
   //   // ...other properties
   //   // role: UserRole;
   // }
@@ -42,51 +50,81 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session({ session, token })
+    {
+      if (token)
+      {
+        session.user.id = token.id as string;
+        session.user.username = token.username as string;
+        session.user.scope = token.scope as string;
+        // session.user.role = user.role; <-- put other properties on the session here
+      }
+      return session;
+    },
+
+    jwt({ token, user }): JWT
+    {
+      console.log('jwt', token, user);
+      // Before adding here you need to add to the session callback above
+      // and you need to add to the user Type above.
+      if (user)
+      {
+        token.id = user.id;
+        token.scope = user.scope;
+        token.username = user.username;
+      }
+
+      return token;
+    },
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers:
     [
       CredentialsProvider({
+        name: 'Credentials',
+
         // The name to display on the sign in form (e.g. "Sign in with...")
-        name: "Credentials",
         // `credentials` is used to generate a form on the sign in page.
         // You can specify which fields should be submitted, by adding keys to the `credentials` object.
         // e.g. domain, username, password, 2FA token, etc.
         // You can pass any HTML attribute to the <input> tag through the object.
         credentials: {
-          username: { label: "Username", type: "text", placeholder: "jsmith" },
+          username: { label: "Username", type: "text" },
           password: { label: "Password", type: "password" }
         },
-        async authorize(credentials, req)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async authorize(credentials): Promise<any>
         {
           // Add logic here to look up the user from the credentials supplied
           // const user = { id: "1", name: "J Smith", email: "jsmith@example.com" };
+
+          const hashedPassword = bcrypt.hashSync(credentials?.password as string, 10);
+
           const account = await db.account.findFirst({
             where: {
-              username: credentials?.username
+              username: credentials?.username,
             }
           });
 
-          if (user)
+          console.log('password', account?.password);
+          console.log('hashedPassword', hashedPassword);
+          console.log('account', account);
+          const compared = bcrypt.compareSync(credentials!.password, account!.password);
+          if (account && compared)
           {
             // Any object returned will be saved in `user` property of the JWT
-            return user;
+            console.log('success', account);
+            return account;
           } else
           {
             // If you return null then an error will be displayed advising the user to check their details.
-            return null;
+            throw new Error('الإسم أو كلمة المرور خطأ');
 
             // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
           }
+
         }
-      })
+      }),
       // DiscordProvider({
       //   clientId: env.DISCORD_CLIENT_ID,
       //   clientSecret: env.DISCORD_CLIENT_SECRET,
@@ -101,6 +139,14 @@ export const authOptions: NextAuthOptions = {
        * @see https://next-auth.js.org/providers/github
        */
     ],
+  pages: {
+    signIn: "/signin",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 24 * 60
+
+  }
 };
 
 /**

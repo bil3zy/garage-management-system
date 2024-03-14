@@ -37,14 +37,16 @@ export default function Register()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            name: "",
             username: "",
             password: "",
+            checkPassword: "",
         },
     });
 
     // const createUserMutation = api.users.createUser.useMutation();
 
-
+    const createAccountMutation = api.account.create.useMutation();
     const { status } = useSession();
     const router = useRouter();
     if (status === 'authenticated')
@@ -56,11 +58,12 @@ export default function Register()
 
         if (values.password === values.checkPassword)
         {
-            // const createUser = await createUserMutation.mutateAsync({
-            //     password: values.password,
-            //     username: values.username,
-            //     name: values.name,
-            // }).then((res) => { console.log('createUser', res); }).catch((e) => { console.log('e', e); });
+            const createAccount = await createAccountMutation.mutateAsync({
+                password: values.password,
+                username: values.username,
+                name: values.name,
+            }).then((res) => { console.log('createAccount', res); }).catch((e) => { console.log('e', e); });
+
 
         }
 

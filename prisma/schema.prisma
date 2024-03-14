@@ -30,11 +30,11 @@ datasource db {
 model Account {
     id                String  @id @default(cuid())
     userId            String
-    type              String
+    type              String?
     username          String
     password          String
-    provider          String
-    providerAccountId String
+    provider          String?
+    providerAccountId String?
     refresh_token     String? // @db.Text
     access_token      String? // @db.Text
     expires_at        Int?
@@ -72,4 +72,54 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Client {
+    id        String    @id @default(cuid())
+    firstName String?
+    lastName  String?
+    phone     String?
+    address   String?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    vehicles  Vehicle[]
+    jobs      Jobs[]
+}
+
+model Vehicle {
+    id                 String   @id @default(cuid())
+    registrationNumber String?
+    yearOfManufacture  Int?
+    model              String?
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
+    client             Client?  @relation(fields: [clientId], references: [id])
+    clientId           String?
+    jobs               Jobs[]
+}
+
+model Jobs {
+    id        String   @id @default(cuid())
+    worker    String?
+    task      String?
+    price     String?
+    status    String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    items     Items[]
+    client    Client?  @relation(fields: [clientId], references: [id])
+    clientId  String?
+    vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
+    vehicleId String?
+}
+
+model Items {
+    id        String   @id @default(cuid())
+    name      String?
+    broughtBy String?
+    price     String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    job       Jobs?    @relation(fields: [jobId], references: [id])
+    jobId     String?
 }

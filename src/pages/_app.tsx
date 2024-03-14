@@ -20,7 +20,7 @@ const MyApp: AppType<{ session: Session | null; }> = ({
 {
   return (
     <SessionProvider session={ session }>
-      <main dir="rtl" className={ `text-primary  ${mirza.className}` }>
+      <main dir="rtl" className={ `text-primary   ${mirza.className}` }>
         <Component { ...pageProps } />
       </main>
     </SessionProvider>

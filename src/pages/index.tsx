@@ -1,14 +1,23 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import Layout from "~/components/Layout";
+import JobsPage from "~/components/jobs/jobsPage";
 
 import { api } from "~/utils/api";
 
 export default function Home()
 {
   // const hello = api.post.hello.useQuery({ text: "from tRPC" });
-
+  const { data: sessionData, status } = useSession();
+  const router = useRouter();
+  console.log(sessionData);
+  if (status === 'unauthenticated')
+  {
+    void router.push('/signin');
+  }
+  console.log(status);
   return (
     <>
       <Head>
@@ -17,7 +26,7 @@ export default function Home()
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-
+        <JobsPage />
       </Layout>
       {/* <main className=" flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
 
