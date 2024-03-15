@@ -116,14 +116,13 @@ export const authOptions: NextAuthOptions = {
             console.log('success', account);
             return account;
           } else
-          {
             // If you return null then an error will be displayed advising the user to check their details.
             throw new Error('الإسم أو كلمة المرور خطأ');
 
-            // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
-          }
+          // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
 
-        }
+
+        },
       }),
       // DiscordProvider({
       //   clientId: env.DISCORD_CLIENT_ID,

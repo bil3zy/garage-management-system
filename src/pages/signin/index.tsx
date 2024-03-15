@@ -21,6 +21,7 @@ import Layout from '~/components/Layout';
 import { RouterOutputs, api } from '~/utils/api';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { Toaster, toast } from 'sonner';
 
 const formSchema = z.object({
     // username: z.string().min(2).max(50),
@@ -64,45 +65,32 @@ export default function RegisterPage()
         // ✅ This will be type-safe and validated.
         console.log(values);
         await signIn('credentials', {
-            redirect: true,
-            callbackUrl: ('/'),
+            redirect: false,
             username: values.username,
             password: values.password
-        },).then((res) => console.log(res)).catch((e) => console.log(e));
+        },).then((res) =>
+        {
+            console.log(res);
+            if (res?.status === 200)
+            {
+                toast.success('تم تسجيل الدخول بنجاح');
+                void router.push('/');
+            }
+            else
+                toast.error('اسم المستخدم او كلمة المرور غير صحيحة');
 
-        //     .then(async (resAccount,) =>
-        // {
-        //     console.log('resAccount', resAccount);
-        //     const foundAccountMutated: RouterOutputs["account"]["findWithQuery"] = findAccountMutation.mutateAsync({
-        //         username: form.getValues().username
-        //     });
-        //     if (resAccount?.ok)
-        //     {
-
-
-        //         toast.success('تم تسجيل الدخول بنجاح!');
-        //     } else
-        //     {
-
-        //         toast.error('لقد حدث خطأ ما، الرجاء المحاولة لاحقا.');
-        //     }
+        }).catch((e) =>
+        {
+            toast.error('اسم المستخدم او كلمة المرور غير صحيحة');
+        });
 
 
-
-        // console.log(resAccount);
-        // });
-
-        // if (values.checkPassword === values.password)
-        // {
-        //     const createdAccount = await createAccountMutation.mutateAsync({
-        //         user
-        // }
 
     }
 
     return (
         <>
-            {/* <Toaster /> */ }
+            <Toaster />
             <div className='w-screen min-h-screen flex justify-center items-center bg-zinc-100'>
 
                 <Form  { ...form }>
