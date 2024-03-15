@@ -27,7 +27,7 @@ export default function Layout({ children, currentPath, prevPath }: {
                         <div className='flex flex-col h-full justify-between '>
 
                             <Button variant={ 'default' } onClick={ async () => await router.push('new-client') }>إضافة عميل جديد</Button>
-                            <Button variant={ 'outline' } onClick={ () => signOut({ redirect: true, callbackUrl: '/signin' }) }>تسجيل الخروج</Button>
+                            <Button variant={ 'outline' } onClick={ () => signOut().then(() => router.push('/signin')) }>تسجيل الخروج</Button>
                         </div>
                     </div>
                 </div>
