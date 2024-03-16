@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/router';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,6 +17,9 @@ import
     FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
+import { Textarea } from '~/components/ui/textarea';
+import { api } from '~/utils/api';
 
 const formSchema = z.object({
     firstName: z.string().min(0).max(25),
@@ -27,6 +31,8 @@ const formSchema = z.object({
     registrationNumber: z.string().min(2).max(50),
     yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()),
     model: z.string().min(2).max(50),
+    mechanic: z.string(),
+    task: z.string()
 });
 
 export default function NewClient()
@@ -39,22 +45,50 @@ export default function NewClient()
             uniqueDepartmentNumber: "",
             yearOfManufacture: year,
             model: "",
+            mechanic: "",
+            task: ""
         },
     });
 
-
+    const createJobMutation = api.jobs.create.useMutation();
+    const router = useRouter();
     // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>)
+    async function onSubmit(values: z.infer<typeof formSchema>)
     {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
+
         console.log(values);
+
+        const createdJob = await createJobMutation.mutateAsync({
+            client: {
+                address: values.address,
+                firstName: values.firstName,
+                lastName: values.lastName,
+                phone: values.phone
+            },
+            vehicle: {
+                registrationNumber: values.registrationNumber,
+                model: values.model,
+                yearOfManufacture: values.yearOfManufacture
+            },
+            job: {
+                mechanic: values.mechanic,
+                task: values.task
+            }
+        });
+        console.log(createdJob);
+        if (createdJob)
+        {
+            void router.push('/');
+        }
+
     }
     return (
         <Layout currentPath={ { arabicName: 'إضافة العميل', path: 'new-client' } } prevPath={ { arabicName: 'الرئيسية', path: '/' } } >
             <Form { ...form } >
                 <form onSubmit={ form.handleSubmit(onSubmit) } className="flex justify-center items-center flex-col py-8 ">
-                    <Card className='space-y-8 my-8 py-8 px-4 flex flex-col justify-center items-center w-9/12'>
+                    <Card className='space-y-8 my-8 py-8 px-4 flex flex-col justify-center items-center w-10/12'>
                         <CardTitle className='text-3xl'>معلومات العميل</CardTitle>
                         <CardContent className={ `flex flex-row gap-8 flex-wrap w-fit justify-center items-center` }>
                             <FormField
@@ -147,45 +181,85 @@ export default function NewClient()
                                     ) }
                                 />
                             </div>
+                            <div className='flex flex-row gap-8 flex-wrap w-fit justify-center items-center'>
 
-                            <FormField
-                                control={ form.control }
-                                name="yearOfManufacture"
-                                render={ ({ field }) =>
-                                {
 
-                                    return (
+                                <FormField
+                                    control={ form.control }
+                                    name="yearOfManufacture"
+                                    render={ ({ field }) =>
+                                    {
+
+                                        return (
+                                            <FormItem>
+                                                <FormLabel>تاريخ التصنيع</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="تاريخ التصنيع" { ...field } />
+                                                </FormControl>
+
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    } }
+                                />
+
+                                <FormField
+                                    control={ form.control }
+                                    name="model"
+                                    render={ ({ field }) => (
                                         <FormItem>
-                                            <FormLabel>تاريخ التصنيع</FormLabel>
+                                            <FormLabel>الموديل</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="تاريخ التصنيع" { ...field } />
+                                                <Input placeholder="الموديل" { ...field } />
                                             </FormControl>
 
                                             <FormMessage />
                                         </FormItem>
-                                    );
-                                } }
-                            />
-
+                                    ) }
+                                />
+                            </div>
+                        </CardContent>
+                        <CardContent className={ `flex flex-col gap-8 flex-wrap w-fit justify-center items-center` }>
                             <FormField
                                 control={ form.control }
-                                name="model"
+                                name="mechanic"
                                 render={ ({ field }) => (
                                     <FormItem>
-                                        <FormLabel>الموديل</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="الموديل" { ...field } />
-                                        </FormControl>
-
-                                        <FormMessage />
+                                        <FormLabel>الفني</FormLabel>
+                                        <Select onValueChange={ field.onChange } defaultValue={ field.value }>
+                                            <FormControl>
+                                                <SelectTrigger className="w-[180px]">
+                                                    <SelectValue placeholder="الفني" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="worker">الفني</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </FormItem>
                                 ) }
                             />
+                            <div className="grid w-96 gap-2">
+                                <FormField
+                                    control={ form.control }
+                                    name="task"
+                                    render={ ({ field }) => (
+                                        <FormItem className='w-full '>
+                                            <FormLabel>أعمال الصيانة</FormLabel>
+                                            <FormControl>
+                                                <Textarea className='w-full h-32' placeholder="أعمال الصيانة المطلوبة"
+                                                    { ...field } />
+                                            </FormControl>
+                                        </FormItem>
+                                    ) }
+                                />
+                                {/* <Button>سجل أعمال الصيانة</Button> */ }
+                            </div>
                         </CardContent>
                     </Card>
                     <Button type="submit">الإضافة</Button>
                 </form>
-            </Form>
+            </Form >
 
         </Layout >
     );
