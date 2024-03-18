@@ -19,19 +19,24 @@ export const jobsRouter = createTRPCRouter({
             lastName: string;
             phone: string;
             registrationNumber: string;
-            price: string;
+            costOfWork: number;
             createdAt: Date;
+            task: string;
             subRows: {
                 items: {
                     id: string;
                     name: string | null;
                     broughtBy: string | null;
-                    price: string | null;
+                    price: number | null;
                     createdAt: Date;
                     updatedAt: Date;
                     jobId: string | null;
                 }[];
-                workers: string;
+                mechanicId: string;
+                mechanic: {
+                    name: string,
+                    percentage: number,
+                };
             };
         }[] = [];
 
@@ -40,6 +45,7 @@ export const jobsRouter = createTRPCRouter({
                 client: true,
                 items: true,
                 vehicle: true,
+                mechanic: true,
             }
         }).then((jobsRes) =>
         {
@@ -53,11 +59,16 @@ export const jobsRouter = createTRPCRouter({
                     lastName: job.client?.lastName ?? "",
                     phone: job.client?.phone ?? "",
                     registrationNumber: job.vehicle?.registrationNumber ?? "",
-                    price: job.price ?? "",
+                    costOfWork: Number(job.costOfWork),
                     createdAt: job.createdAt,
+                    task: job.task ?? "",
                     subRows: {
                         items: job.items,
-                        workers: job.worker ?? ""
+                        mechanicId: job.mechanicId ?? "",
+                        mechanic: {
+                            name: job.mechanic?.name ?? "",
+                            percentage: job.mechanic?.percentage ?? 0
+                        }
                     },
                 };
                 finalJobsArr.push(jobObject);
@@ -66,7 +77,7 @@ export const jobsRouter = createTRPCRouter({
         });
         console.log('finalJobsArr', finalJobsArr);
         const sortedJobsArr = finalJobsArr.sort((a, b) => b.createdAt.getUTCDate() - a.createdAt.getUTCDate());
-        if (finalJobsArr !== undefined)
+        if (sortedJobsArr !== undefined)
             return sortedJobsArr;
 
     }),
@@ -84,7 +95,7 @@ export const jobsRouter = createTRPCRouter({
                 model: z.string().min(2).max(50),
             }),
             job: z.object({
-                mechanic: z.string(),
+                mechanicId: z.string(),
                 task: z.string()
             }),
 
@@ -127,12 +138,45 @@ export const jobsRouter = createTRPCRouter({
                     },
                     status: "جاري",
                     task: input.job.task ?? "",
-                    worker: input.job.mechanic ?? "",
+                    mechanicId: undefined,
                 }
             });
 
             return createdJob;
         }),
+    updateMechanic: protectedProcedure.input(z.object({
+        id: z.string(),
+        mechanicId: z.string(),
+    })).mutation(async ({ ctx, input }) =>
+    {
+        const updatedJob = await ctx.db.jobs.update({
+            where: {
+                id: input.id
+            },
+            data: {
+                mechanicId: input.mechanicId,
+            }
+        });
+        return updatedJob;
+    }),
+    updateTask: protectedProcedure.input(z.object({
+        id: z.string(),
+        task: z.string(),
+        costOfWork: z.number()
+
+    })).mutation(async ({ ctx, input }) =>
+    {
+        const updatedJob = await ctx.db.jobs.update({
+            where: {
+                id: input.id
+            },
+            data: {
+                task: input.task,
+                costOfWork: input.costOfWork,
+            }
+        });
+        return updatedJob;
+    }),
     getSecretMessage: protectedProcedure.query(() =>
     {
         return "you can now see this secret message!";

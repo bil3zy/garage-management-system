@@ -31,8 +31,7 @@ import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
 // import TeacherChangeForm from "../TeacherChangeForm/TeacherChangeForm";
 import { Toaster } from "sonner";
-// import DeleteManyTeachers from "../DeleteManyTeachers";
-// import { Teacher } from "@prisma/client";
+
 import { DataTablePagination } from "~/components/DataTablePagination";
 import SearchBar from "~/components/SearchBar";
 import { getExpandedRowModel } from "@tanstack/react-table";
@@ -41,13 +40,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "..
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { SubComponent } from "./SubComponent";
 import { subComponentColumns } from "./subComponentColumns";
+import { SortingState } from "@tanstack/react-table";
+import { getSortedRowModel } from "@tanstack/react-table";
+import { RouterOutputs } from "~/utils/api";
 
-// import { Student } from "@prisma/client";
-// import StudentChangeForm from "./StudentChangeForm";
-// import SelectClass from "./SelectClass";
-// import DeleteManyStudents from "./DeleteManyStudents";
-// import StudentChangeForm from "./StudentChangeForm";
-// import TeacherChangeForm from "~/components/TeacherChangeForm/TeacherChangeForm";
+
 
 declare module '@tanstack/react-table' {
     interface TableMeta<TData extends RowData>
@@ -59,13 +56,35 @@ declare module '@tanstack/react-table' {
 
 interface DataTableProps<TData, TValue>
 {
-    columns: ColumnDef<TData, TValue>[];
+    columns: ColumnDef<
+        {
+            id: string;
+            firstName: string;
+            lastName: string;
+            phone: string;
+            registrationNumber: string;
+            costOfWork: number;
+            subRows: {
+                items: {
+                    id: string;
+                    name: string | null;
+                    broughtBy: string | null;
+                    price: number | null;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    jobId: string | null;
+                }[];
+                mechanicId: string;
+            };
+        }, TValue>[];
     data: TData[];
 
 }
 
 
-export function DataTable<TData, TValue>({
+
+
+export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findAll"]>[number], TValue>({
     columns,
     data,
 
@@ -81,6 +100,8 @@ export function DataTable<TData, TValue>({
 
     const [dataState, setDataState] = useState<TData[] | null>(null);
     const [isOpen, setIsOpen] = React.useState(false);
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+
 
     useEffect(() =>
     {
@@ -137,11 +158,13 @@ export function DataTable<TData, TValue>({
         getRowCanExpand: () => true,
         // getSubRows: row => row?.subRows,
         getExpandedRowModel: getExpandedRowModel(),
-
+        onSortingChange: setSorting,
+        getSortedRowModel: getSortedRowModel(),
         state: {
             columnFilters,
             rowSelection,
             expanded,
+            sorting,
 
         },
         // Provide our updateData function to our table meta
@@ -166,10 +189,6 @@ export function DataTable<TData, TValue>({
             },
         },
     });
-    console.log(data);
-    // console.log('row', rowSelection);
-    // console.log('originalRow', table.getSelectedRowModel().rows[0].original);
-    console.log('expanded', expanded);
 
     return (
         <div className="m-8" >
@@ -228,7 +247,7 @@ export function DataTable<TData, TValue>({
                             {
                                 return (
                                     <Fragment key={ row.id }>
-                                        <TableRow className={ `${row.getIsExpanded() ? 'bg-slate-100' : ''}` }>
+                                        <TableRow className={ `${row.getIsExpanded() ? 'bg-slate-100' : ''} cursor-pointer` }>
                                             {/* first row is a normal row */ }
                                             { row.getVisibleCells().map(cell =>
                                             {
@@ -248,7 +267,7 @@ export function DataTable<TData, TValue>({
                                             <TableRow>
                                                 {/* 2nd row is a custom 1 cell row */ }
                                                 <TableCell colSpan={ row.getVisibleCells().length }>
-                                                    <SubComponent data={ (row.original as any).subRows.items as any } columns={ subComponentColumns } />
+                                                    <SubComponent job={ row.original } jobId={ row.original?.id } data={ (row.original as any).subRows.items as any } columns={ subComponentColumns } />
                                                 </TableCell>
                                             </TableRow>
                                         ) }

@@ -15,7 +15,7 @@ export type Items = {
     id: string;
     name: string;
     broughtBy: string;
-    price: string;
+    price: number;
     createdAt: Date;
     updatedAt: Date;
     jobId: string;
@@ -66,14 +66,17 @@ export const subComponentColumns: ColumnDef<any, any>[] = [
     {
 
         accessorFn: (row) => row.name,
+        id: 'name',
         header: "القطعة",
     },
     {
         accessorFn: (row) => row.price,
+        id: 'price',
         header: 'السعر'
     },
     {
         accessorFn: (row) => row.broughtBy,
+        id: 'broughtBy',
         header: 'مدفوعة من'
     }
 

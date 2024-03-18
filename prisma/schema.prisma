@@ -122,27 +122,37 @@ model Vehicle {
 }
 
 model Jobs {
-    id        String   @id @default(cuid())
-    worker    String?
-    task      String?
-    price     String?
-    status    String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    items     Items[]
-    client    Client?  @relation(fields: [clientId], references: [id])
-    clientId  String?
-    vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
-    vehicleId String?
+    id         String    @id @default(cuid())
+    task       String?
+    costOfWork Int?
+    status     String?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    items      Items[]
+    client     Client?   @relation(fields: [clientId], references: [id])
+    clientId   String?
+    vehicle    Vehicle?  @relation(fields: [vehicleId], references: [id])
+    vehicleId  String?
+    mechanic   Mechanic? @relation(fields: [mechanicId], references: [id])
+    mechanicId String?
 }
 
 model Items {
     id        String   @id @default(cuid())
     name      String?
     broughtBy String?
-    price     String?
+    price     Int?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     job       Jobs?    @relation(fields: [jobId], references: [id])
     jobId     String?
+}
+
+model Mechanic {
+    id         String   @id @default(cuid())
+    name       String?
+    percentage Int?
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+    jobs       Jobs[]
 }

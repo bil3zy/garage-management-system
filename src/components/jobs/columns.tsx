@@ -10,6 +10,7 @@ import { FiPrinter } from "react-icons/fi";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { z } from "zod";
 import { Items } from "@prisma/client";
+import { DataTableColumnHeader } from "../DataTableColumnHeader";
 
 type NoUndefinedField<T> = { [P in keyof T]-?: NoUndefinedField<NonNullable<T[P]>> };
 type RequiredProperty<T> = { [P in keyof T]: Required<NonNullable<T[P]>>; };
@@ -25,18 +26,18 @@ export const columns: ColumnDef<{
     lastName: string;
     phone: string;
     registrationNumber: string;
-    price: string;
+    costOfWork: number;
     subRows: {
         items: {
             id: string;
             name: string | null;
             broughtBy: string | null;
-            price: string | null;
+            price: number | null;
             createdAt: Date;
             updatedAt: Date;
             jobId: string | null;
         }[];
-        workers: string;
+        mechanicId: string;
     };
 }>[] = [
         // {
@@ -65,15 +66,35 @@ export const columns: ColumnDef<{
         },
         {
             accessorFn: (row) => row.phone,
-            header: "رقم الهاتف",
+            id: 'phone',
+            header: ({ column }) => (
+                <DataTableColumnHeader column={ column } title="رقم الهاتف" />
+            ),
         },
         {
             accessorFn: (row) => row.registrationNumber,
-            header: "رقم اللوحة",
+            id: 'registrationNumber',
+            header: ({ column }) => (
+                <DataTableColumnHeader column={ column } title="رقم اللوحة" />
+            ),
         },
         {
-            accessorFn: row => row.price,
-            header: "القيمة النهائية",
+            accessorFn: row => row.costOfWork,
+            id: 'costOfWork',
+
+            header: ({ column }) => (
+                <DataTableColumnHeader column={ column } title="القيمة النهائية" />
+            ),
+            cell: ({ cell }) =>
+            {
+                let taskPrice = Number(cell.getValue());
+                cell.row.original.subRows.items.forEach((item) =>
+                {
+                    taskPrice += Number(item.price) ?? 0;
+                });
+                return taskPrice;
+                console.log('cell', cell);
+            }
         },
         {
             id: 'actions',

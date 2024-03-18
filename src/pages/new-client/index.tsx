@@ -31,7 +31,7 @@ const formSchema = z.object({
     registrationNumber: z.string().min(2).max(50),
     yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()),
     model: z.string().min(2).max(50),
-    mechanic: z.string(),
+    mechanicId: z.string(),
     task: z.string()
 });
 
@@ -45,7 +45,7 @@ export default function NewClient()
             uniqueDepartmentNumber: "",
             yearOfManufacture: year,
             model: "",
-            mechanic: "",
+            mechanicId: "",
             task: ""
         },
     });
@@ -73,7 +73,7 @@ export default function NewClient()
                 yearOfManufacture: values.yearOfManufacture
             },
             job: {
-                mechanic: values.mechanic,
+                mechanicId: values.mechanicId,
                 task: values.task
             }
         });
@@ -222,7 +222,7 @@ export default function NewClient()
                         <CardContent className={ `flex flex-col gap-8 flex-wrap w-fit justify-center items-center` }>
                             <FormField
                                 control={ form.control }
-                                name="mechanic"
+                                name="mechanicId"
                                 render={ ({ field }) => (
                                     <FormItem>
                                         <FormLabel>الفني</FormLabel>
@@ -233,7 +233,7 @@ export default function NewClient()
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="worker">الفني</SelectItem>
+                                                <SelectItem value="mechanicId">الفني</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </FormItem>

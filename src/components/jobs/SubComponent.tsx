@@ -1,56 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/rules-of-hooks */
-// import React from 'react';
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-// import { Button } from '../ui/button';
 
-// export default function SubComponent({ row })
-// {
-//     console.log('row from sub', row);
-//     return (
-//         <div className='grid grid-cols-2'>
-//             <div>
-
-//                 <Table className='m-8 w-fit'>
-//                     <TableHeader>
-//                         <TableRow>
-//                             <TableHead className='text-center'>القطعة</TableHead>
-//                             <TableHead className='text-center'>السعر</TableHead>
-//                             <TableHead className='text-center'>إحضار</TableHead>
-//                         </TableRow>
-//                     </TableHeader>
-
-//                     <TableBody>
-//                         { row.original.subRows.items.map((item) =>
-//                         {
-//                             return (
-
-
-//                                 <TableRow key={ row.id }>
-//                                     <TableCell className='text-sm'>
-//                                         { item.name }
-//                                     </TableCell>
-
-
-//                                     <TableCell>
-//                                         { item.price }
-//                                     </TableCell>
-
-//                                     <TableCell>
-//                                         { ` ${item.broughtBy}` }
-//                                     </TableCell>
-//                                 </TableRow>
-//                             );
-//                         }
-//                         )
-//                         }
-//                     </TableBody>
-//                 </Table>
-//                 <Button variant={ 'default' }>إضافة قطعة</Button>
-//             </div>
-
-//         </div>
-//     );
-// }
 "use client";
 
 import
@@ -58,6 +11,7 @@ import
     ColumnDef,
     ColumnFiltersState,
     RowData,
+    RowModel,
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
@@ -78,7 +32,7 @@ import React, { Fragment, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
 // import TeacherChangeForm from "../TeacherChangeForm/TeacherChangeForm";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 // import DeleteManyTeachers from "../DeleteManyTeachers";
 // import { Teacher } from "@prisma/client";
 import { DataTablePagination } from "~/components/DataTablePagination";
@@ -88,6 +42,15 @@ import { ExpandedState } from "@tanstack/react-table";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import { RouterOutputs, api } from "~/utils/api";
+import AddItemsForm from "./AddItemsForm";
+import { Row } from "@tanstack/react-table";
+import { Items } from "./subComponentColumns";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
+import { Label } from "../ui/label";
 
 // import SubComponent from "./SubComponent";
 // import { Student } from "@prisma/client";
@@ -109,14 +72,25 @@ interface DataTableProps<TData, TValue>
 {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-
+    jobId: string;
+    job: any;
 }
 
+const FormSchema = z.object({
+    task: z
+        .string(),
+    costOfWork: z.number()
 
-export function SubComponent<TData, TValue>({
+});
+
+
+export function SubComponent<TData extends Items, TValue>({
     columns,
     data,
-}: DataTableProps<TData, TValue>)
+    jobId,
+    job
+}: DataTableProps<TData, TValue>,
+)
 {
     const [open, setOpen] = React.useState(false);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -126,7 +100,26 @@ export function SubComponent<TData, TValue>({
     // const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
     const [dataState, setDataState] = useState<TData[] | null>(null);
-    // const [isOpen, setIsOpen] = React.useState(false);
+
+    const [editTask, setEditTask] = useState(false);
+
+    const form = useForm<z.infer<typeof FormSchema>>({
+        resolver: zodResolver(FormSchema),
+        mode: 'onSubmit'
+    });
+
+    const updateTaskMutation = api.jobs.updateTask.useMutation();
+
+    async function onSubmit(data: z.infer<typeof FormSchema>)
+    {
+        await updateTaskMutation.mutateAsync({
+            id: jobId,
+            task: data.task,
+            costOfWork: data.costOfWork
+        });
+        setEditTask(!editTask);
+    }
+
 
     useEffect(() =>
     {
@@ -135,7 +128,7 @@ export function SubComponent<TData, TValue>({
 
     console.log('data', data);
     const DefaultColumn: Partial<ColumnDef<TData>> = {
-        cell: ({ getValue, row: { index }, row, column: { id }, table }) =>
+        cell: ({ getValue, cell, row: { index }, row, column: { id }, table }) =>
         {
             const initialValue = getValue();
             // We need to keep and update the state of the cell normally
@@ -154,8 +147,18 @@ export function SubComponent<TData, TValue>({
             }, [initialValue]);
 
             return (
-                row.getIsSelected() ? (
 
+                cell.column.id === "broughtBy" && row.getIsSelected() ? (
+                    <Select onValueChange={ value => setValue(value) } value={ value as string }>
+                        <SelectTrigger onBlur={ onBlur } >
+                            <SelectValue placeholder={ String(getValue()) } />
+                        </SelectTrigger>
+                        <SelectContent >
+                            <SelectItem value="الورشة">الورشة</SelectItem>
+                            <SelectItem value="العميل">العميل</SelectItem>
+                        </SelectContent>
+                    </Select>
+                ) : row.getIsSelected() ? (
                     <Input
                         className={ `text-center w-full h-full  justify-center p-1  rounded-md text-muted-foreground` }
                         value={ value as string }
@@ -166,6 +169,29 @@ export function SubComponent<TData, TValue>({
             );
         },
     };
+
+    const updateItemsMutation = api.items.update.useMutation({});
+    const handleUpdateChanges = async (rowData: Row<TData[number]>[]) =>
+    {
+        for (const row of rowData)
+        {
+            try
+            {
+                const updatedResult = await updateItemsMutation.mutateAsync({
+                    id: String(row.original.id),
+                    name: String(row.original.name),
+                    price: Number(row.original.price),
+                    broughtBy: String(row.original.broughtBy),
+                });
+                toast.success('تم تسجيل التغييرات ');
+                table.toggleAllRowsSelected(false);
+            } catch (error)
+            {
+                toast.error("لقد حدث خطأ ما");
+            }
+        }
+    };
+
 
     const defaultData = React.useMemo(() => [], []);
     const table = useReactTable({
@@ -213,50 +239,90 @@ export function SubComponent<TData, TValue>({
         },
     });
 
-    // console.log('row', rowSelection);
-    // console.log('originalRow', table.getSelectedRowModel().rows[0].original);
-    // console.log('expanded', expanded);
+
+    const rowData: any = table.getSelectedRowModel().flatRows;
+
+
+    const mechanics = api.mechanic.findAll.useQuery();
+    const updateMechanicMutation = api.jobs.updateMechanic.useMutation();
+
+    const handleUpdateMechanic = async (jobId: string, mechanicId: string) =>
+    {
+        await updateMechanicMutation.mutateAsync({
+            id: String(jobId),
+            mechanicId: mechanicId,
+        });
+    };
 
     return (
-        <div className="m-8 gap-16" >
+        <div className="m-8 gap-8 flex flex-col" >
             <Toaster />
             <div className="flex justify-between  mb-8">
                 {/* <div className="flex w-full justify-start gap-16">
                     <SearchBar table={ table } />
            
-                </div>
-
-                <div className="flex gap-6">
-
-                    <Dialog open={ open } onOpenChange={ setOpen }>
-
-                        <DialogTrigger asChild>
-                            <Button>
-                                إضافة
-                            </Button>
-
-
-                        </DialogTrigger>
-                        <DialogContent>
-                      
-                        </DialogContent>
-                    </Dialog>
-
-
                 </div> */}
 
-                <div className="w-full gap-6 grid">
-                    <Select>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="العامل" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="worker">العامل</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <div className="grid w-96 gap-2">
-                        <Textarea placeholder="أعمال الصيانة المطلوبة" />
-                        <Button>سجل أعمال الصيانة</Button>
+
+
+                <div className="w-full gap-6 grid grid-cols-2">
+                    <div className="grid w-96 ">
+                        <Form { ...form }>
+                            <form className="gap-8 grid">
+                                <FormField
+                                    control={ form.control }
+                                    name="costOfWork"
+                                    render={ ({ field }) => (
+                                        <FormItem onChange={ (e) => form.setValue("costOfWork", Number((e.target as HTMLButtonElement).value)) }>
+                                            <FormLabel>قيمة شغل اليد</FormLabel>
+                                            <FormControl>
+                                                <Input disabled={ !editTask } defaultValue={ String(job?.costOfWork) ?? "القيمة.." }  { ...field } />
+                                            </FormControl>
+                                        </FormItem>
+                                    ) }
+                                />
+                                <FormField
+                                    control={ form.control }
+                                    name="task"
+                                    render={ ({ field }) => (
+                                        <FormItem className="w-full">
+                                            <FormControl>
+
+                                                <Textarea disabled={ !editTask } defaultValue={ String(job?.task) ?? "" } placeholder="أعمال الصيانة المطلوبة"   { ...field }
+                                                />
+                                            </FormControl>
+                                            {
+                                                !editTask ?
+                                                    (
+                                                        <Button type="button" onClick={ () => setEditTask(!editTask) }>تعديل</Button>
+                                                    ) : (
+                                                        <Button type="button" onClick={ form.handleSubmit(onSubmit) }>احفظ</Button>
+                                                    )
+                                            }
+                                        </FormItem>
+                                    ) } />
+                            </form>
+                        </Form>
+                    </div>
+                    <div className="flex flex-col gap-4">
+
+                        <Label className="text-right ">الفني</Label>
+                        <Select onValueChange={ (value => handleUpdateMechanic(jobId, value)) }  >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder={ job.subRows.mechanic.name ? job.subRows.mechanic.name : "الفني" } />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {
+                                    mechanics.data?.map((mechanic) =>
+                                    {
+                                        console.log(mechanic);
+                                        return (
+                                            <SelectItem key={ mechanic.id } value={ mechanic.id }>{ mechanic.name }</SelectItem>
+                                        );
+                                    })
+                                }
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>
@@ -318,7 +384,35 @@ export function SubComponent<TData, TValue>({
 
                 {/* <DataTablePagination table={ table } /> */ }
             </div >
-            <Button>إضافة قطعة</Button>
+            {
+                table.getSelectedRowModel().flatRows.length > 0 ? (
+                    <div className="flex justify-center">
+                        <Button type="button" onClick={ () => handleUpdateChanges(rowData) }>حفظ جميع التغييرات</Button>
+                    </div>
+                ) : (
+
+
+
+                    <div className="flex gap-6 w-full justify-center">
+
+                        <Dialog open={ open } onOpenChange={ setOpen } >
+
+                            <DialogTrigger asChild>
+                                <Button type="button">
+                                    إضافة قطعة
+                                </Button>
+
+
+                            </DialogTrigger>
+                            <DialogContent className="bg-zinc-50 w-4/12 px-16 py-8">
+                                <AddItemsForm setOpen={ setOpen } jobId={ jobId } />
+                            </DialogContent>
+                        </Dialog>
+
+                    </div>
+
+                )
+            }
         </div >
 
     );

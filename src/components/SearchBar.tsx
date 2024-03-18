@@ -8,10 +8,10 @@ export default function SearchBar<TData>({ table }: { table: Table<TData>; })
         <div className="flex items-center w-1/4 min-w-[140px] ">
             <Input
                 placeholder="ابحث"
-                value={ (table.getColumn("lastName")?.getFilterValue() as string) ?? "" }
+                value={ (table.getColumn("registrationNumber")?.getFilterValue() as string) ?? "" }
                 onChange={ (event) =>
                 {
-                    table.getColumn("lastName")?.setFilterValue(event.target.value);
+                    table.getColumn("registrationNumber")?.setFilterValue(event.target.value);
                 }
                 }
                 className="max-w-sm"

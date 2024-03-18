@@ -15,11 +15,11 @@ export default function Layout({ children, currentPath, prevPath }: {
     const router = useRouter();
     return (
         <>
-            <Head>
-                <title> { currentPath?.arabicName } </title>
-
-
-            </Head>
+            { currentPath?.arabicName && (
+                <Head>
+                    <title> { currentPath?.arabicName } </title>
+                </Head>)
+            }
             <div className="w-screen h-full pb-20 flex flex-col items-end relative ">
 
                 <Header currentPath={ currentPath } prevPath={ prevPath } />

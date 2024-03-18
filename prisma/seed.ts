@@ -8,6 +8,8 @@ const main = async () =>
     await db.client.deleteMany();
     await db.vehicle.deleteMany();
     await db.jobs.deleteMany();
+    await db.items.deleteMany();
+    await db.mechanic.deleteMany();
 
     for (let index = 0; index < 20; index++)
     {
@@ -34,16 +36,16 @@ const main = async () =>
                 }
             }).then(async (vehicleRes) =>
             {
+
                 const createdJobs = await db.jobs.create({
                     data: {
-                        worker: `عبد السميع ${index}`,
                         task: `صيانة ${index}`,
-                        price: String(Math.floor(Math.random() * 1000) + "د.ل"),
+                        costOfWork: (Math.floor(Math.random() * 1000)),
                         items: {
                             create: {
                                 name: `القطعة ${index}`,
                                 broughtBy: `${(Math.floor(Math.random() * 2)) % 2 === 0 ? `العميل` : `الورشة`}`,
-                                price: String(Math.floor(Math.random() * 200) + 'د.ل'),
+                                price: (Math.floor(Math.random() * 200)),
                             },
                         },
                         client: {
@@ -55,7 +57,14 @@ const main = async () =>
                             connect: {
                                 id: vehicleRes.id
                             }
-                        }
+                        },
+                        mechanic: {
+                            create: {
+                                name: `عبد السميع ${index}`,
+                                percentage: (Math.floor(Math.random() * 100)),
+                            }
+                        },
+
                     }
                 });
             });

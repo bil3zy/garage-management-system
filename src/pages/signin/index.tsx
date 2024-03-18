@@ -22,6 +22,7 @@ import { RouterOutputs, api } from '~/utils/api';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { Toaster, toast } from 'sonner';
+import Head from 'next/head';
 
 const formSchema = z.object({
     // username: z.string().min(2).max(50),
@@ -90,6 +91,9 @@ export default function RegisterPage()
 
     return (
         <>
+            <Head>
+                <title>تسجيل الدخول</title>
+            </Head>
             <Toaster />
             <div className='w-screen min-h-screen flex justify-center items-center bg-zinc-100'>
 
