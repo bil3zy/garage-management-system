@@ -20,7 +20,7 @@ const config = {
     extend: {
       fontSize: {
         xs: "0.85rem",
-        sm: "1.1rem",
+        sm: "0.95rem",
         base: "1.25rem",
         lg: "1.3rem",
         xl: "1.45rem",

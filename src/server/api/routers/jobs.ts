@@ -62,6 +62,8 @@ export const jobsRouter = createTRPCRouter({
                     costOfWork: Number(job.costOfWork),
                     createdAt: job.createdAt,
                     task: job.task ?? "",
+                    vehicleId: job.vehicleId,
+                    clientId: job.clientId,
                     subRows: {
                         items: job.items,
                         mechanicId: job.mechanicId ?? "",

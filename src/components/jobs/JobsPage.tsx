@@ -9,7 +9,7 @@ export default function JobsPage()
     console.log(data);
     data?.sort((a, b) => b.createdAt.getUTCDate() - a.createdAt.getUTCDate());
     return (
-        <div className="container mx-auto py-10">
+        <div className=" mx-auto py-10">
 
             <DataTable
                 columns={ columns }

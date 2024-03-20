@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -43,8 +44,8 @@ import { subComponentColumns } from "./subComponentColumns";
 import { SortingState } from "@tanstack/react-table";
 import { getSortedRowModel } from "@tanstack/react-table";
 import { RouterOutputs } from "~/utils/api";
-
-
+import { Input } from "../ui/input";
+import { useRouter } from "next/router";
 
 declare module '@tanstack/react-table' {
     interface TableMeta<TData extends RowData>
@@ -53,30 +54,9 @@ declare module '@tanstack/react-table' {
     }
 }
 
-
 interface DataTableProps<TData, TValue>
 {
-    columns: ColumnDef<
-        {
-            id: string;
-            firstName: string;
-            lastName: string;
-            phone: string;
-            registrationNumber: string;
-            costOfWork: number;
-            subRows: {
-                items: {
-                    id: string;
-                    name: string | null;
-                    broughtBy: string | null;
-                    price: number | null;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    jobId: string | null;
-                }[];
-                mechanicId: string;
-            };
-        }, TValue>[];
+    columns: any;
     data: TData[];
 
 }
@@ -109,44 +89,46 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
     }, [data]);
 
 
-    // const defaultColumn: Partial<ColumnDef<TData>> = {
-    //     cell: ({ getValue, row: { index }, row, column: { id }, table }) =>
-    //     {
-    //         const initialValue = getValue();
-    //         // We need to keep and update the state of the cell normally
-    //         const [value, setValue] = React.useState(initialValue);
+    const defaultColumn: Partial<ColumnDef<TData>> = {
+        cell: ({ getValue, row: { index }, row, column: { id }, table }) =>
+        {
+            const initialValue = getValue();
+            // We need to keep and update the state of the cell normally
+            const [value, setValue] = React.useState(initialValue);
 
-    //         // When the input is blurred, we'll call our table meta's updateData function
-    //         const onBlur = () =>
-    //         {
-    //             table.options.meta?.updateData(index, id, value);
-    //         };
+            // When the input is blurred, we'll call our table meta's updateData function
+            const onBlur = () =>
+            {
+                table.options.meta?.updateData(index, id, value);
+            };
 
-    //         // If the initialValue is changed external, sync it up with our state
-    //         React.useEffect(() =>
-    //         {
-    //             setValue(initialValue);
-    //         }, [initialValue]);
+            // If the initialValue is changed external, sync it up with our state
+            React.useEffect(() =>
+            {
+                setValue(initialValue);
+            }, [initialValue]);
 
-    //         return (
-    //             row.getIsSelected() ? (
+            return (
+                row.getIsSelected() ? (
 
-    //                 <input
-    //                     className={ `text-center  flex justify-center p-1 m-2 rounded-md text-muted-foreground` }
-    //                     value={ value as string }
-    //                     onChange={ e => setValue(e.target.value) }
-    //                     onBlur={ onBlur }
-    //                 />
-    //             ) : getValue()
-    //         );
-    //     },
-    // };
+                    <Input
+                        className={ `text-center  rounded-md text-muted-foreground` }
+                        value={ value as string }
+                        onChange={ e => setValue(e.target.value) }
+                        onBlur={ onBlur }
+                    />
+                ) : getValue()
+            );
+        },
+    };
+
+    const router = useRouter();
 
     const defaultData = React.useMemo(() => [], []);
     const table = useReactTable({
         data: dataState ? dataState : defaultData,
         columns,
-        // defaultColumn,
+        defaultColumn,
         autoResetPageIndex: false,
         // debugRows: true,
         getCoreRowModel: getCoreRowModel(),
@@ -202,20 +184,19 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
                 <div className="flex gap-6">
 
                     {/* <DeleteManyStudents table={ table } /> */ }
-                    <Dialog open={ open } onOpenChange={ setOpen }>
+                    {/* <Dialog open={ open } onOpenChange={ setOpen }> */ }
 
-                        <DialogTrigger asChild>
-                            <Button>
-                                إضافة
-                            </Button>
+                    {/* <DialogTrigger asChild> */ }
+                    <Button onClick={ () => router.push('/new-client') }>
+                        إضافة
+                    </Button>
 
 
-                        </DialogTrigger>
-                        <DialogContent>
-                            {/* <StudentChangeForm classId={ classId } setOpen={ setOpen } /> */ }
-                            {/* <TeacherChangeForm setOpen={ setOpen } refetch={ refetch } /> */ }
-                        </DialogContent>
-                    </Dialog>
+                    {/* </DialogTrigger> */ }
+                    {/* <DialogContent> */ }
+
+                    {/* </DialogContent> */ }
+                    {/* </Dialog> */ }
 
 
                 </div>
@@ -247,14 +228,15 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
                             {
                                 return (
                                     <Fragment key={ row.id }>
-                                        <TableRow className={ `${row.getIsExpanded() ? 'bg-slate-100' : ''} cursor-pointer` }>
+                                        <TableRow className={ `w-fit ${row.getIsExpanded() ? 'bg-slate-100' : ''} cursor-pointer` }>
                                             {/* first row is a normal row */ }
                                             { row.getVisibleCells().map(cell =>
                                             {
                                                 console.log('cell', cell.column.id);
-                                                const columnIdNotActions = cell.column.id !== 'actions';
+
                                                 return (
-                                                    <TableCell onClick={ columnIdNotActions ? row.getToggleExpandedHandler() : undefined } key={ cell.id }>
+                                                    <TableCell className={ `w-fit ${cell.column.id === 'arrowDown' || cell.column.id === 'actions' && 'w-fit p-2'
+                                                        } ` } key={ cell.id }>
                                                         { flexRender(
                                                             cell.column.columnDef.cell,
                                                             cell.getContext()
@@ -289,4 +271,4 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
         </div >
 
     );
-}
+};;
