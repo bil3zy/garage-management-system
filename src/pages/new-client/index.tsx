@@ -22,17 +22,17 @@ import { Textarea } from '~/components/ui/textarea';
 import { api } from '~/utils/api';
 
 const formSchema = z.object({
-    firstName: z.string().min(0).max(25),
-    lastName: z.string().min(0).max(25),
-    phone: z.string().min(0).max(10, "الرقم يجب أن لا يتجاوز العشرةأرقام"),
-    address: z.string().min(0).max(50),
+    firstName: z.string().min(0).max(25).optional(),
+    lastName: z.string().min(0).max(25).optional(),
+    phone: z.string().min(0).max(10, "الرقم يجب أن لا يتجاوز العشرةأرقام").optional(),
+    address: z.string().min(0).max(50).optional(),
 
-    uniqueDepartmentNumber: z.string().min(0).max(5),
-    registrationNumber: z.string().min(2).max(50),
-    yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()),
-    model: z.string().min(2).max(50),
-    mechanicId: z.string(),
-    task: z.string()
+    uniqueDepartmentNumber: z.string().min(0).max(5).optional(),
+    registrationNumber: z.string().min(2).max(50).optional(),
+    yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
+    model: z.string().min(2).max(50).optional(),
+    mechanicId: z.string().optional(),
+    task: z.string().optional()
 });
 
 export default function NewClient()
@@ -68,7 +68,7 @@ export default function NewClient()
                 phone: values.phone
             },
             vehicle: {
-                registrationNumber: values.registrationNumber,
+                registrationNumber: `${values.registrationNumber}-${values.uniqueDepartmentNumber}`,
                 model: values.model,
                 yearOfManufacture: values.yearOfManufacture
             },
