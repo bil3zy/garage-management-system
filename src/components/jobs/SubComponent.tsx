@@ -105,7 +105,13 @@ export function SubComponent<TData extends Items, TValue>({
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
-        mode: 'onSubmit'
+        mode: 'onSubmit',
+        defaultValues: {
+            task: job.task,
+            costOfWork: job.costOfWork
+        }
+
+
     });
 
     const updateTaskMutation = api.jobs.updateTask.useMutation();
@@ -117,16 +123,18 @@ export function SubComponent<TData extends Items, TValue>({
             task: data.task,
             costOfWork: data.costOfWork
         });
+        console.log('data', data);
         setEditTask(!editTask);
     }
-
+    console.log(form.formState.errors);
+    console.log(form.getValues());
 
     useEffect(() =>
     {
         setDataState(data);
     }, [data]);
 
-    console.log('data', data);
+    // console.log('data', data);
     const DefaultColumn: Partial<ColumnDef<TData>> = {
         cell: ({ getValue, cell, row: { index }, row, column: { id }, table }) =>
         {
@@ -276,7 +284,7 @@ export function SubComponent<TData extends Items, TValue>({
                                         <FormItem onChange={ (e) => form.setValue("costOfWork", Number((e.target as HTMLButtonElement).value)) }>
                                             <FormLabel>قيمة شغل اليد</FormLabel>
                                             <FormControl>
-                                                <Input disabled={ !editTask } defaultValue={ String(job?.costOfWork) ?? "القيمة.." }  { ...field } />
+                                                <Input inputMode="numeric" disabled={ !editTask } defaultValue={ (job?.costOfWork) }  { ...field } />
                                             </FormControl>
                                         </FormItem>
                                     ) }
@@ -291,16 +299,24 @@ export function SubComponent<TData extends Items, TValue>({
                                                 <Textarea disabled={ !editTask } defaultValue={ String(job?.task) ?? "" } placeholder="أعمال الصيانة المطلوبة"   { ...field }
                                                 />
                                             </FormControl>
-                                            {
-                                                !editTask ?
-                                                    (
-                                                        <Button type="button" onClick={ () => setEditTask(!editTask) }>تعديل</Button>
-                                                    ) : (
-                                                        <Button type="button" onClick={ form.handleSubmit(onSubmit) }>احفظ</Button>
-                                                    )
-                                            }
+
+
+
+
                                         </FormItem>
                                     ) } />
+                                <div className="w-full">
+
+                                    { !editTask ? (
+
+                                        <Button className="" type="button" onClick={ () => setEditTask(!editTask) }>تعديل</Button>
+                                    ) : (
+
+
+                                        <Button className="" type="button" onClick={ form.handleSubmit(onSubmit) }>احفظ</Button>
+                                    )
+                                    }
+                                </div>
                             </form>
                         </Form>
                     </div>
@@ -315,7 +331,7 @@ export function SubComponent<TData extends Items, TValue>({
                                 {
                                     mechanics.data?.map((mechanic) =>
                                     {
-                                        console.log(mechanic);
+                                        // console.log(mechanic);
                                         return (
                                             <SelectItem key={ mechanic.id } value={ mechanic.id }>{ mechanic.name }</SelectItem>
                                         );

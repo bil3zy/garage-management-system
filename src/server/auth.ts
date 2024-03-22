@@ -29,6 +29,7 @@ declare module "next-auth" {
       id: string;
       username: string;
       scope: string;
+      garageId: string;
       // ...other properties
       // role: UserRole;
     };
@@ -38,6 +39,8 @@ declare module "next-auth" {
   {
     username: string;
     scope: string;
+    garageId: string;
+
     // ...other properties
     // role: UserRole;
   }
@@ -57,6 +60,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.username = token.username as string;
         session.user.scope = token.scope as string;
+        session.user.garageId = token.garageId as string;
         // session.user.role = user.role; <-- put other properties on the session here
       }
       return session;
@@ -72,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.scope = user.scope;
         token.username = user.username;
+        token.garageId = user.garageId;
       }
 
       return token;
@@ -103,6 +108,13 @@ export const authOptions: NextAuthOptions = {
           const account = await db.account.findFirst({
             where: {
               username: credentials?.username,
+            },
+            include: {
+              garage: {
+                select: {
+                  id: true
+                }
+              }
             }
           });
 

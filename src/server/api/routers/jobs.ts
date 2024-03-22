@@ -22,6 +22,8 @@ export const jobsRouter = createTRPCRouter({
             costOfWork: number;
             createdAt: Date;
             task: string;
+            status: string | null;
+            garageId: string;
             subRows: {
                 items: {
                     id: string;
@@ -41,6 +43,9 @@ export const jobsRouter = createTRPCRouter({
         }[] = [];
 
         const foundJobs = await ctx.db.jobs.findMany({
+            where: {
+                garageId: ctx.session.user.garageId,
+            },
             include: {
                 client: true,
                 items: true,
@@ -59,11 +64,13 @@ export const jobsRouter = createTRPCRouter({
                     lastName: job.client?.lastName ?? "",
                     phone: job.client?.phone ?? "",
                     registrationNumber: job.vehicle?.registrationNumber ?? "",
+                    garageId: job.garageId,
                     costOfWork: Number(job.costOfWork),
                     createdAt: job.createdAt,
                     task: job.task ?? "",
                     vehicleId: job.vehicleId,
                     clientId: job.clientId,
+                    status: job.status ?? "",
                     subRows: {
                         items: job.items,
                         mechanicId: job.mechanicId ?? "",
@@ -83,24 +90,35 @@ export const jobsRouter = createTRPCRouter({
             return sortedJobsArr;
 
     }),
+    completed: protectedProcedure.input(z.object({ id: z.string(), status: z.string() })).mutation(async ({ ctx, input }) =>
+    {
+        const foundJobs = await ctx.db.jobs.update({
+            where: {
+                id: input.id
+            }, data: {
+                status: input.status === "جاري" ? "انتهت" : "جاري"
+            }
+        });
+        return foundJobs;
+    }),
     create: protectedProcedure
         .input(z.object({
             client: z.object({
-                firstName: z.string().min(0).max(25),
-                lastName: z.string().min(0).max(25),
-                phone: z.string().min(0).max(10, "الرقم يجب أن لا يتجاوز العشرةأرقام"),
-                address: z.string().min(0).max(50),
+                firstName: z.string().min(0).max(25).optional(),
+                lastName: z.string().min(0).max(25).optional(),
+                phone: z.string().min(0).max(10, "الرقم يجب أن لا يتجاوز العشرةأرقام").optional(),
+                address: z.string().min(0).max(50).optional(),
+
             }),
             vehicle: z.object({
-                registrationNumber: z.string().min(2).max(50),
-                yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()),
-                model: z.string().min(2).max(50),
+                registrationNumber: z.string().min(2).max(50).optional(),
+                yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
+                model: z.string().min(2).max(50).optional(),
             }),
             job: z.object({
-                mechanicId: z.string(),
-                task: z.string()
+                mechanicId: z.string().optional(),
+                task: z.string().optional(),
             }),
-
         }))
         .mutation(async ({ ctx, input }) =>
         {
@@ -114,11 +132,13 @@ export const jobsRouter = createTRPCRouter({
                 where:
                 {
                     registrationNumber: input.vehicle.registrationNumber
+
                 }
             });
 
             console.log('foundVehicle', foundVehicle);
             console.log('findClient', findClient);
+            const garageId = ctx.session.user.garageId;
 
             const createdJob = await ctx.db.jobs.create({
                 data: {
@@ -141,6 +161,11 @@ export const jobsRouter = createTRPCRouter({
                     status: "جاري",
                     task: input.job.task ?? "",
                     mechanicId: undefined,
+                    garage: {
+                        connect: {
+                            id: garageId
+                        }
+                    },
                 }
             });
 

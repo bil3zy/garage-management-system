@@ -232,7 +232,7 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
                                             {/* first row is a normal row */ }
                                             { row.getVisibleCells().map(cell =>
                                             {
-                                                console.log('cell', cell.column.id);
+                                                // console.log('cell', cell.column.id);
 
                                                 return (
                                                     <TableCell className={ `w-fit ${cell.column.id === 'arrowDown' || cell.column.id === 'actions' && 'w-fit p-2'

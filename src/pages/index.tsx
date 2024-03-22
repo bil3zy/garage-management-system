@@ -17,7 +17,9 @@ export default function Home()
   {
     void router.push('/signin');
   }
-  console.log(status);
+  console.log(sessionData);
+
+
   return (
     <>
       <Head>

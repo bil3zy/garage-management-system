@@ -32,7 +32,8 @@ const formSchema = z.object({
     yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
     model: z.string().min(2).max(50).optional(),
     mechanicId: z.string().optional(),
-    task: z.string().optional()
+    task: z.string().optional(),
+    status: z.string().optional(),
 });
 
 export default function NewClient()

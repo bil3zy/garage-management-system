@@ -1,5 +1,5 @@
-import * as z from "zod";
-import { CompleteUser, RelatedUserModel } from "./index";
+import * as z from "zod"
+import { CompleteUser, RelatedUserModel, CompleteGarage, RelatedGarageModel } from "./index"
 
 export const AccountModel = z.object({
   id: z.string(),
@@ -16,11 +16,12 @@ export const AccountModel = z.object({
   scope: z.string().nullish(),
   id_token: z.string().nullish(),
   session_state: z.string().nullish(),
-});
+  garageId: z.string().nullish(),
+})
 
-export interface CompleteAccount extends z.infer<typeof AccountModel>
-{
-  user: CompleteUser;
+export interface CompleteAccount extends z.infer<typeof AccountModel> {
+  user: CompleteUser
+  garage?: CompleteGarage | null
 }
 
 /**
@@ -30,4 +31,5 @@ export interface CompleteAccount extends z.infer<typeof AccountModel>
  */
 export const RelatedAccountModel: z.ZodSchema<CompleteAccount> = z.lazy(() => AccountModel.extend({
   user: RelatedUserModel,
-}));
+  garage: RelatedGarageModel.nullish(),
+}))

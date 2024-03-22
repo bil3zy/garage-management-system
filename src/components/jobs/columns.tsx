@@ -113,6 +113,20 @@ export const columns: ColumnDef<any, any>[] = [
         ),
     },
     {
+        accessorFn: (row) => row.status,
+        id: 'status',
+        header: ({ column }) => (
+            <DataTableColumnHeader column={ column } title="الحالة" />
+        ),
+        cell: ({ cell }) =>
+        {
+            return (
+                <div className={ `p-2 rounded ${cell.getValue() === "انتهت" ? "bg-yellow-500" : "bg-green-600"} text-zinc-50  ` }>{ cell.getValue() }</div>
+            );
+        }
+    },
+
+    {
         accessorFn: row => row.costOfWork,
         id: 'costOfWork',
         header: ({ column }) => (
@@ -150,6 +164,14 @@ export const columns: ColumnDef<any, any>[] = [
                 });
                 row.toggleSelected();
             };
+            const completeJobMutation = api.jobs.completed.useMutation();
+            const handleCompleteJob = async () =>
+            {
+                await completeJobMutation.mutateAsync({
+                    id: row.original.id,
+                    status: row.original.status,
+                });
+            };
             return (
                 <>
                     {
@@ -174,7 +196,7 @@ export const columns: ColumnDef<any, any>[] = [
                                     <DropdownMenuContent>
 
                                         <DropdownMenuItem onClick={ (value) => row.toggleSelected(!!value) }>التعديل</DropdownMenuItem>
-
+                                        <DropdownMenuItem onClick={ () => handleCompleteJob() }>اكتملت الصيانة</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

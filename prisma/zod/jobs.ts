@@ -1,5 +1,5 @@
-import * as z from "zod";
-import { CompleteItems, RelatedItemsModel, CompleteClient, RelatedClientModel, CompleteVehicle, RelatedVehicleModel, CompleteMechanic, RelatedMechanicModel } from "./index";
+import * as z from "zod"
+import { CompleteItems, RelatedItemsModel, CompleteClient, RelatedClientModel, CompleteVehicle, RelatedVehicleModel, CompleteMechanic, RelatedMechanicModel, CompleteGarage, RelatedGarageModel } from "./index"
 
 export const JobsModel = z.object({
   id: z.string(),
@@ -11,14 +11,15 @@ export const JobsModel = z.object({
   clientId: z.string().nullish(),
   vehicleId: z.string().nullish(),
   mechanicId: z.string().nullish(),
-});
+  garageId: z.string(),
+})
 
-export interface CompleteJobs extends z.infer<typeof JobsModel>
-{
-  items: CompleteItems[];
-  client?: CompleteClient | null;
-  vehicle?: CompleteVehicle | null;
-  mechanic?: CompleteMechanic | null;
+export interface CompleteJobs extends z.infer<typeof JobsModel> {
+  items: CompleteItems[]
+  client?: CompleteClient | null
+  vehicle?: CompleteVehicle | null
+  mechanic?: CompleteMechanic | null
+  garage?: CompleteGarage | null
 }
 
 /**
@@ -31,4 +32,5 @@ export const RelatedJobsModel: z.ZodSchema<CompleteJobs> = z.lazy(() => JobsMode
   client: RelatedClientModel.nullish(),
   vehicle: RelatedVehicleModel.nullish(),
   mechanic: RelatedMechanicModel.nullish(),
-}));
+  garage: RelatedGarageModel.nullish(),
+}))
