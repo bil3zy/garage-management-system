@@ -81,6 +81,7 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
     const [dataState, setDataState] = useState<TData[] | null>(null);
     const [isOpen, setIsOpen] = React.useState(false);
     const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [updatedRow, setUpdatedRow] = useState<boolean>(false);
 
 
     useEffect(() =>
@@ -151,10 +152,13 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
         },
         // Provide our updateData function to our table meta
         meta: {
+
             updateData: (rowIndex, columnId, value) =>
             {
                 // Skip page index reset until after next rerender
                 // skipAutoResetPageIndex();
+
+
                 setDataState(old =>
                     old!.map((row, index) =>
                     {

@@ -20,7 +20,7 @@ export const clientsRouter = createTRPCRouter({
         }),
 
     update: protectedProcedure
-        .input(z.object({ id: z.string(), firstName: z.string(), lastName: z.string(), phone: z.string() }))
+        .input(z.object({ id: z.string(), firstName: z.string().optional(), lastName: z.string().optional(), phone: z.string().optional() }))
         .mutation(async ({ ctx, input }) =>
         {
             const updatedClient = await ctx.db.client.update({

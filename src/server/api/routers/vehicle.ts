@@ -21,7 +21,7 @@ export const vehiclesRouter = createTRPCRouter({
 
     update: protectedProcedure.input(z.object({
         id: z.string(),
-        registrationNumber: z.string()
+        registrationNumber: z.string().optional()
     })).mutation(async ({ ctx, input }) =>
     {
 
