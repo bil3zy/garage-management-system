@@ -147,8 +147,16 @@ export const columns: ColumnDef<any, any>[] = [
         // accessorFn: () => null,
         cell: ({ row }) =>
         {
-            const updateVehicleMutation = api.vehicle.update.useMutation();
-            const updateClientMutation = api.client.update.useMutation();
+            const utils = api.useUtils();
+            // console.log(utils.jobs.);
+            const updateVehicleMutation = api.vehicle.update.useMutation({
+                onSuccess: async () => await utils.jobs.findAll.refetch()
+
+            });
+            const updateClientMutation = api.clients.update.useMutation({
+                onSuccess: async () => await utils.jobs.findAll.refetch()
+
+            });
             const handleUpdateClientAndVehicle = async () =>
             {
                 await updateVehicleMutation.mutateAsync({
@@ -164,7 +172,9 @@ export const columns: ColumnDef<any, any>[] = [
                 });
                 row.toggleSelected();
             };
-            const completeJobMutation = api.jobs.completed.useMutation();
+            const completeJobMutation = api.jobs.completed.useMutation({
+                onSuccess: async () => await utils.jobs.findAll.refetch()
+            });
             const handleCompleteJob = async () =>
             {
                 await completeJobMutation.mutateAsync({

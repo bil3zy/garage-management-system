@@ -28,9 +28,9 @@ const formSchema = z.object({
     address: z.string().min(0).max(50).optional(),
 
     uniqueDepartmentNumber: z.string().min(0).max(5).optional(),
-    registrationNumber: z.string().min(2).max(50).optional(),
+    registrationNumber: z.string().min(0).max(50).optional(),
     yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
-    model: z.string().min(2).max(50).optional(),
+    model: z.string().min(0).max(50).optional(),
     mechanicId: z.string().optional(),
     task: z.string().optional(),
     status: z.string().optional(),
@@ -102,7 +102,6 @@ export default function NewClient()
                                             <Input placeholder="الاسم الاول" { ...field } />
                                         </FormControl>
 
-                                        <FormMessage />
                                     </FormItem>
                                 ) }
                             />
@@ -142,7 +141,6 @@ export default function NewClient()
                                         <FormControl>
                                             <Input placeholder="العنوان" { ...field } />
                                         </FormControl>
-                                        <FormMessage />
                                     </FormItem>
                                 ) }
                             />
@@ -160,7 +158,6 @@ export default function NewClient()
                                                 <Input placeholder="رقم التمييز" { ...field } />
                                             </FormControl>
 
-                                            <FormMessage />
                                         </FormItem>
                                     ) }
                                 />
@@ -177,7 +174,6 @@ export default function NewClient()
                                                 <Input placeholder="رقم المركبة" { ...field } />
                                             </FormControl>
 
-                                            <FormMessage />
                                         </FormItem>
                                     ) }
                                 />
@@ -194,11 +190,10 @@ export default function NewClient()
                                         return (
                                             <FormItem>
                                                 <FormLabel>تاريخ التصنيع</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="تاريخ التصنيع" { ...field } />
+                                                <FormControl onChange={ (e) => field.onChange(Number((e.target as HTMLButtonElement).value)) }>
+                                                    <Input inputMode='numeric' placeholder="تاريخ التصنيع" { ...field } />
                                                 </FormControl>
 
-                                                <FormMessage />
                                             </FormItem>
                                         );
                                     } }

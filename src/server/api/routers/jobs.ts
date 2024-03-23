@@ -111,9 +111,9 @@ export const jobsRouter = createTRPCRouter({
 
             }),
             vehicle: z.object({
-                registrationNumber: z.string().min(2).max(50).optional(),
+                registrationNumber: z.string().min(0).max(50).optional(),
                 yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
-                model: z.string().min(2).max(50).optional(),
+                model: z.string().min(0).max(50).optional(),
             }),
             job: z.object({
                 mechanicId: z.string().optional(),
@@ -140,36 +140,39 @@ export const jobsRouter = createTRPCRouter({
             console.log('findClient', findClient);
             const garageId = ctx.session.user.garageId;
 
-            const createdJob = await ctx.db.jobs.create({
-                data: {
-                    client: {
-                        create: {
-                            address: input.client.address,
-                            firstName: input.client.firstName,
-                            lastName: input.client.lastName,
-                            phone: input.client.phone,
+            if (garageId)
+            {
 
+                const createdJob = await ctx.db.jobs.create({
+                    data: {
+                        client: {
+                            create: {
+                                address: input.client.address,
+                                firstName: input.client.firstName,
+                                lastName: input.client.lastName,
+                                phone: input.client.phone,
+                            },
                         },
-                    },
-                    vehicle: {
-                        create: {
-                            registrationNumber: input.vehicle.registrationNumber,
-                            model: input.vehicle.model,
-                            yearOfManufacture: input.vehicle.yearOfManufacture,
-                        }
-                    },
-                    status: "جاري",
-                    task: input.job.task ?? "",
-                    mechanicId: undefined,
-                    garage: {
-                        connect: {
-                            id: garageId
-                        }
-                    },
-                }
-            });
+                        vehicle: {
+                            create: {
+                                registrationNumber: input.vehicle.registrationNumber,
+                                model: input.vehicle.model,
+                                yearOfManufacture: input.vehicle.yearOfManufacture,
+                            }
+                        },
+                        status: "جاري",
+                        task: input.job.task ?? "",
+                        mechanicId: undefined,
+                        garage: {
+                            connect: {
+                                id: garageId
+                            }
+                        },
+                    }
+                });
 
-            return createdJob;
+                return createdJob;
+            }
         }),
     updateMechanic: protectedProcedure.input(z.object({
         id: z.string(),
