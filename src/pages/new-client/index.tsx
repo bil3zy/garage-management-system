@@ -29,7 +29,7 @@ const formSchema = z.object({
 
     uniqueDepartmentNumber: z.string().min(0).max(5).optional(),
     registrationNumber: z.string().min(0).max(50).optional(),
-    yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
+    yearOfManufacture: z.string().optional(),
     model: z.string().min(0).max(50).optional(),
     mechanicId: z.string().optional(),
     task: z.string().optional(),
@@ -44,7 +44,7 @@ export default function NewClient()
         defaultValues: {
             registrationNumber: "",
             uniqueDepartmentNumber: "",
-            yearOfManufacture: year,
+            yearOfManufacture: String(year),
             model: "",
             mechanicId: "",
             task: ""
@@ -190,8 +190,8 @@ export default function NewClient()
                                         return (
                                             <FormItem>
                                                 <FormLabel>تاريخ التصنيع</FormLabel>
-                                                <FormControl onChange={ (e) => field.onChange(Number((e.target as HTMLButtonElement).value)) }>
-                                                    <Input inputMode='numeric' placeholder="تاريخ التصنيع" { ...field } />
+                                                <FormControl>
+                                                    <Input placeholder="تاريخ التصنيع" { ...field } />
                                                 </FormControl>
 
                                             </FormItem>
