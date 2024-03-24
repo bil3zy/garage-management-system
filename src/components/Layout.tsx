@@ -27,7 +27,7 @@ export default function Layout({ children, currentPath, prevPath }: {
             }
             <div className="w-screen h-full pb-8 flex flex-col items-end relative ">
 
-                <Header currentPath={ currentPath } prevPath={ prevPath } sideMenuOpen={ sideMenuOpen } setSideMenuOpen={ setSideMenuOpen } />
+                <Header currentPath={ currentPath } prevPath={ prevPath } />
 
 
 
