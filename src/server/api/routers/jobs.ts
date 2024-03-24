@@ -112,7 +112,7 @@ export const jobsRouter = createTRPCRouter({
             }),
             vehicle: z.object({
                 registrationNumber: z.string().min(0).max(50).optional(),
-                yearOfManufacture: z.string().optional(),
+                yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
                 model: z.string().min(0).max(50).optional(),
             }),
             job: z.object({

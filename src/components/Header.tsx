@@ -2,6 +2,8 @@ import { useRouter } from 'next/router';
 import React from 'react';
 import { Button } from './ui/button';
 import { MdArrowBackIosNew } from "react-icons/md";
+import { FiChevronsLeft } from 'react-icons/fi';
+
 export default function Header({ prevPath, currentPath }: {
     prevPath?: { arabicName: string, path: string; };
     currentPath?: { arabicName: string, path: string; };
@@ -25,6 +27,10 @@ export default function Header({ prevPath, currentPath }: {
                     </div>
                 )
             }
+
+            <div >
+                <FiChevronsLeft />
+            </div>
         </div>
     );
 }

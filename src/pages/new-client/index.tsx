@@ -29,7 +29,7 @@ const formSchema = z.object({
 
     uniqueDepartmentNumber: z.string().min(0).max(5).optional(),
     registrationNumber: z.string().min(0).max(50).optional(),
-    yearOfManufacture: z.string().optional(),
+    yearOfManufacture: z.number().gt(1900).lte(new Date().getFullYear()).optional(),
     model: z.string().min(0).max(50).optional(),
     mechanicId: z.string().optional(),
     task: z.string().optional(),
@@ -44,7 +44,7 @@ export default function NewClient()
         defaultValues: {
             registrationNumber: "",
             uniqueDepartmentNumber: "",
-            yearOfManufacture: String(year),
+            yearOfManufacture: year,
             model: "",
             mechanicId: "",
             task: ""
@@ -53,6 +53,9 @@ export default function NewClient()
 
     const createJobMutation = api.jobs.create.useMutation();
     const router = useRouter();
+
+
+    console.log(form.formState.errors);
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof formSchema>)
     {
@@ -60,6 +63,7 @@ export default function NewClient()
         // ✅ This will be type-safe and validated.
 
         console.log(values);
+        console.log(typeof values.yearOfManufacture);
 
         const createdJob = await createJobMutation.mutateAsync({
             client: {
@@ -186,12 +190,12 @@ export default function NewClient()
                                     name="yearOfManufacture"
                                     render={ ({ field }) =>
                                     {
-
+                                        console.log(field);
                                         return (
                                             <FormItem>
                                                 <FormLabel>تاريخ التصنيع</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="تاريخ التصنيع" { ...field } />
+                                                <FormControl >
+                                                    <Input value={ field.value } onChange={ (e) => form.setValue('yearOfManufacture', Number(e.target.value)) } type="number" inputMode='numeric' placeholder="تاريخ التصنيع" />
                                                 </FormControl>
 
                                             </FormItem>
