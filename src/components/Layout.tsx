@@ -39,7 +39,7 @@ export default function Layout({ children, currentPath, prevPath }: {
                         <div className="flex w-screen h-full">
                             <div className='w-[12%] border-l-2  m-2 ml-0 h-[70vh]    p-2 items-center'>
                                 <div className='flex flex-col h-full justify-between'>
-                                    <Button variant={ 'default' } onClick={ async () => await router.push('new-client') }>إضافة عميل جديد</Button>
+                                    <Button className='text-md' variant={ 'default' } onClick={ async () => await router.push('new-client') }>إضافة عميل جديد</Button>
                                     <Button variant={ 'outline' } onClick={ () => signOut({ callbackUrl: '/signin' }) }>تسجيل الخروج</Button>
                                 </div>
                             </div>

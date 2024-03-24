@@ -28,9 +28,7 @@ export default function Header({ prevPath, currentPath }: {
                 )
             }
 
-            <div >
-                <FiChevronsLeft />
-            </div>
+
         </div>
     );
 }
