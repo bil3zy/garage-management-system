@@ -27,11 +27,11 @@ export default function Layout({ children, currentPath, prevPath }: {
             }
             <div className="w-screen h-full pb-8 flex flex-col items-end relative ">
 
-                <Header currentPath={ currentPath } prevPath={ prevPath } />
+                <Header currentPath={ currentPath } prevPath={ prevPath } setSideMenuOpen={ setSideMenuOpen } sideMenuOpen={ sideMenuOpen } />
 
 
 
-                { sideMenuOpen ? (
+                { sideMenuOpen && (
                     <div className="fixed right-0 top-16">
                         <div className=' w-screen'>
                             <PageHeader />
@@ -39,19 +39,17 @@ export default function Layout({ children, currentPath, prevPath }: {
                         <div className="flex w-screen h-full">
                             <div className='w-[12%] border-l-2  m-2 ml-0 h-[70vh]    p-2 items-center'>
                                 <div className='flex flex-col h-full justify-between'>
-                                    <Button className='text-md' variant={ 'default' } onClick={ async () => await router.push('new-client') }>إضافة عميل جديد</Button>
+                                    <Button className='text-sm' variant={ 'default' } onClick={ async () => await router.push('new-client') }>إضافة عميل جديد</Button>
                                     <Button variant={ 'outline' } onClick={ () => signOut({ callbackUrl: '/signin' }) }>تسجيل الخروج</Button>
                                 </div>
                             </div>
-                            <div className='translate-y-1/2 h-44 w-6 bg-zinc-200 rounded-tl-md rounded-bl-md cursor-pointer hover:opacity-80' onClick={ () => setSideMenuOpen(!sideMenuOpen) }>
+
+                            <div className='right-0 z-50 top-1/2 bottom-1/2 translate-y-1/2 h-44 w-6 bg-zinc-200 rounded-tl-md rounded-bl-md cursor-pointer hover:opacity-80' onClick={ () => setSideMenuOpen(!sideMenuOpen) }>
                                 <FiChevronsRight className='w-full h-full text-neutral-400' />
                             </div>
                         </div>
                     </div>
-                ) : (
-                    <div className='fixed right-0 z-50 top-1/2 bottom-1/2 -translate-y-1/2 h-44 w-6 bg-zinc-200 rounded-tl-md rounded-bl-md cursor-pointer hover:opacity-80' onClick={ () => setSideMenuOpen(!sideMenuOpen) }>
-                        <FiChevronsLeft className='w-full h-full text-neutral-400' />
-                    </div>
+
                 ) }
 
 
