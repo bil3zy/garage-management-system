@@ -34,6 +34,8 @@ export default function AddItemsForm({ jobId, setOpen }: { jobId: string; setOpe
     });
 
     const createItemMutation = api.items.create.useMutation({});
+    const utils = api.useUtils();
+
     console.log('jobId', jobId);
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof formSchema>)
@@ -49,9 +51,10 @@ export default function AddItemsForm({ jobId, setOpen }: { jobId: string; setOpe
                 broughtBy: values.broughtBy,
                 jobId
             }
-        }).then(() =>
+        }).then(async () =>
         {
             setOpen(false);
+            await utils.items.invalidate();
         });
     }
 

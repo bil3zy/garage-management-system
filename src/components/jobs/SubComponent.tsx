@@ -11,7 +11,6 @@ import
     ColumnDef,
     ColumnFiltersState,
     RowData,
-    RowModel,
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
@@ -31,18 +30,10 @@ import
 import React, { Fragment, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
-// import TeacherChangeForm from "../TeacherChangeForm/TeacherChangeForm";
 import { Toaster, toast } from "sonner";
-// import DeleteManyTeachers from "../DeleteManyTeachers";
-// import { Teacher } from "@prisma/client";
-import { DataTablePagination } from "~/components/DataTablePagination";
-import SearchBar from "~/components/SearchBar";
-import { getExpandedRowModel } from "@tanstack/react-table";
-import { ExpandedState } from "@tanstack/react-table";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import { RouterOutputs, api } from "~/utils/api";
 import AddItemsForm from "./AddItemsForm";
 import { Row } from "@tanstack/react-table";
 import { Items } from "./subComponentColumns";
@@ -51,14 +42,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Label } from "../ui/label";
+import { api } from "~/utils/api";
+import { DataTablePagination } from "../DataTablePagination";
 
-// import SubComponent from "./SubComponent";
-// import { Student } from "@prisma/client";
-// import StudentChangeForm from "./StudentChangeForm";
-// import SelectClass from "./SelectClass";
-// import DeleteManyStudents from "./DeleteManyStudents";
-// import StudentChangeForm from "./StudentChangeForm";
-// import TeacherChangeForm from "~/components/TeacherChangeForm/TeacherChangeForm";
 
 declare module '@tanstack/react-table' {
     interface TableMeta<TData extends RowData>
@@ -71,7 +57,7 @@ declare module '@tanstack/react-table' {
 interface DataTableProps<TData, TValue>
 {
     columns: ColumnDef<TData, TValue>[];
-    data: TData[];
+    // data: TData[];
     jobId: string;
     job: any;
 }
@@ -86,7 +72,7 @@ const FormSchema = z.object({
 
 export function SubComponent<TData extends Items, TValue>({
     columns,
-    data,
+    // data,
     jobId,
     job
 }: DataTableProps<TData, TValue>,
@@ -103,6 +89,13 @@ export function SubComponent<TData extends Items, TValue>({
 
     const [editTask, setEditTask] = useState(false);
 
+    const { data } = api.items.findByJobId.useQuery({
+        jobId: jobId ?? ""
+    });
+
+    console.log('subData', data);
+    console.log('jobId', jobId);
+
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         mode: 'onSubmit',
@@ -110,8 +103,6 @@ export function SubComponent<TData extends Items, TValue>({
             task: job.task,
             costOfWork: job.costOfWork
         }
-
-
     });
 
     const updateTaskMutation = api.jobs.updateTask.useMutation();
@@ -123,15 +114,13 @@ export function SubComponent<TData extends Items, TValue>({
             task: data.task,
             costOfWork: data.costOfWork
         });
-        console.log('data', data);
         setEditTask(!editTask);
     }
-    console.log(form.formState.errors);
-    console.log(form.getValues());
+
 
     useEffect(() =>
     {
-        setDataState(data);
+        setDataState(data as unknown as TData[]);
     }, [data]);
 
     // console.log('data', data);
@@ -185,19 +174,26 @@ export function SubComponent<TData extends Items, TValue>({
         {
             try
             {
-                const updatedResult = await updateItemsMutation.mutateAsync({
+                await updateItemsMutation.mutateAsync({
                     id: String(row.original.id),
                     name: String(row.original.name),
                     price: Number(row.original.price),
                     broughtBy: String(row.original.broughtBy),
+                }).then(async () =>
+                {
+
+                    toast.success('تم تسجيل التغييرات ');
+                    table.toggleAllRowsSelected(false);
+                    // await utils.jobs.findAll.refetch();
+                    await utils.items.findByJobId.refetch();
+
                 });
-                toast.success('تم تسجيل التغييرات ');
-                table.toggleAllRowsSelected(false);
             } catch (error)
             {
                 toast.error("لقد حدث خطأ ما");
             }
         }
+
     };
 
 
@@ -209,20 +205,13 @@ export function SubComponent<TData extends Items, TValue>({
         autoResetPageIndex: false,
         // debugRows: true,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
+        getPaginationRowModel: data?.length !== undefined && data.length > 0 ? getPaginationRowModel() : undefined,
         getFilteredRowModel: getFilteredRowModel(),
         onColumnFiltersChange: setColumnFilters,
         onRowSelectionChange: setRowSelection,
-        // onExpandedChange: setExpanded,
-        // getRowCanExpand: () => true,
-        // getSubRows: row => row?.subRows,
-        // getExpandedRowModel: getExpandedRowModel(),
-
         state: {
             columnFilters,
             rowSelection,
-            // expanded,
-
         },
         // Provide our updateData function to our table meta
         meta: {
@@ -250,187 +239,202 @@ export function SubComponent<TData extends Items, TValue>({
 
     const rowData: any = table.getSelectedRowModel().flatRows;
 
-
+    const utils = api.useUtils();
     const mechanics = api.mechanic.findAll.useQuery();
     const updateMechanicMutation = api.jobs.updateMechanic.useMutation();
 
     const handleUpdateMechanic = async (jobId: string, mechanicId: string) =>
     {
-        await updateMechanicMutation.mutateAsync({
-            id: String(jobId),
-            mechanicId: mechanicId,
-        });
+        try
+        {
+            await updateMechanicMutation.mutateAsync({
+                id: String(jobId),
+                mechanicId: mechanicId,
+            });
+            await utils.mechanic.invalidate();
+            toast.success('تم تغيير الفني');
+        } catch (error)
+        {
+            toast.error('لقد حدث خطأ ما');
+        }
     };
 
     return (
-        <div className="m-8 gap-8 flex flex-col" >
-            <Toaster />
-            <div className="flex justify-between  mb-8">
-                {/* <div className="flex w-full justify-start gap-16">
+        <>
+            <div className="m-8 gap-8 flex flex-col" >
+                <Toaster />
+                <div className="flex justify-between  mb-8">
+                    {/* <div className="flex w-full justify-start gap-16">
                     <SearchBar table={ table } />
            
                 </div> */}
 
 
 
-                <div className="w-full gap-6 grid grid-cols-2">
-                    <div className="grid w-96 ">
-                        <Form { ...form }>
-                            <form className="gap-8 grid">
-                                <FormField
-                                    control={ form.control }
-                                    name="costOfWork"
-                                    render={ ({ field }) => (
-                                        <FormItem onChange={ (e) => form.setValue("costOfWork", Number((e.target as HTMLButtonElement).value)) }>
-                                            <FormLabel>قيمة شغل اليد</FormLabel>
-                                            <FormControl>
-                                                <Input inputMode="numeric" disabled={ !editTask } defaultValue={ (job?.costOfWork) }  { ...field } />
-                                            </FormControl>
-                                        </FormItem>
-                                    ) }
-                                />
-                                <FormField
-                                    control={ form.control }
-                                    name="task"
-                                    render={ ({ field }) => (
-                                        <FormItem className="w-full">
-                                            <FormControl>
+                    <div className="w-full gap-6 grid grid-cols-2">
+                        <div className="grid w-96 ">
+                            <Form { ...form }>
+                                <form className="gap-8 grid">
+                                    <FormField
+                                        control={ form.control }
+                                        name="costOfWork"
+                                        render={ ({ field }) => (
+                                            <FormItem onChange={ (e) => form.setValue("costOfWork", Number((e.target as HTMLButtonElement).value)) }>
+                                                <FormLabel>قيمة شغل اليد</FormLabel>
+                                                <FormControl>
+                                                    <Input inputMode="numeric" disabled={ !editTask } defaultValue={ (job?.costOfWork) }  { ...field } />
+                                                </FormControl>
+                                            </FormItem>
+                                        ) }
+                                    />
+                                    <FormField
+                                        control={ form.control }
+                                        name="task"
+                                        render={ ({ field }) => (
+                                            <FormItem className="w-full">
+                                                <FormControl>
 
-                                                <Textarea disabled={ !editTask } defaultValue={ String(job?.task) ?? "" } placeholder="أعمال الصيانة المطلوبة"   { ...field }
-                                                />
-                                            </FormControl>
-
-
+                                                    <Textarea disabled={ !editTask } defaultValue={ String(job?.task) ?? "" } placeholder="أعمال الصيانة المطلوبة"   { ...field }
+                                                    />
+                                                </FormControl>
 
 
-                                        </FormItem>
-                                    ) } />
-                                <div className="w-full">
-
-                                    { !editTask ? (
-
-                                        <Button className="" type="button" onClick={ () => setEditTask(!editTask) }>تعديل</Button>
-                                    ) : (
 
 
-                                        <Button className="" type="button" onClick={ form.handleSubmit(onSubmit) }>احفظ</Button>
-                                    )
-                                    }
-                                </div>
-                            </form>
-                        </Form>
-                    </div>
-                    <div className="flex flex-col gap-4">
+                                            </FormItem>
+                                        ) } />
+                                    <div className="w-full">
 
-                        <Label className="text-right ">الفني</Label>
-                        <Select onValueChange={ (value => handleUpdateMechanic(jobId, value)) }  >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder={ job.subRows.mechanic.name ? job.subRows.mechanic.name : "الفني" } />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    mechanics.data?.map((mechanic) =>
+                                        { !editTask ? (
+
+                                            <Button className="" type="button" onClick={ () => setEditTask(!editTask) }>تعديل</Button>
+                                        ) : (
+
+
+                                            <Button className="" type="button" onClick={ form.handleSubmit(onSubmit) }>احفظ</Button>
+                                        )
+                                        }
+                                    </div>
+                                </form>
+                            </Form>
+                        </div>
+                        <div className="flex flex-col gap-4">
+
+                            <Label className="text-right ">الفني</Label>
+                            <Select onValueChange={ (value => handleUpdateMechanic(jobId, value)) }  >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder={ job.subRows.mechanic.name ? job.subRows.mechanic.name : "الفني" } />
+                                </SelectTrigger>
+                                <SelectContent>
                                     {
-                                        // console.log(mechanic);
-                                        return (
-                                            <SelectItem key={ mechanic.id } value={ mechanic.id }>{ mechanic.name }</SelectItem>
-                                        );
-                                    })
-                                }
-                            </SelectContent>
-                        </Select>
+                                        mechanics.data?.map((mechanic) =>
+                                        {
+                                            // console.log(mechanic);
+                                            return (
+                                                <SelectItem key={ mechanic.id } value={ mechanic.id }>{ mechanic.name }</SelectItem>
+                                            );
+                                        })
+                                    }
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="border rounded-md ">
-                <Table className={ `m-auto w-full relative h-full bg-transparent text-center shadow-lg` }>
-                    <TableHeader className=" rounded-lg h-12" >
-                        { table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow className="text-center   h-12" key={ headerGroup.id }>
-                                { headerGroup.headers.map((header) =>
+                <div className="border rounded-md ">
+                    <Table className={ `m-auto w-full relative h-full bg-transparent text-center shadow-lg` }>
+                        <TableHeader className=" rounded-lg h-12" >
+                            { table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow className="text-center   h-12" key={ headerGroup.id }>
+                                    { headerGroup.headers.map((header) =>
+                                    {
+                                        return (
+                                            <TableHead className="text-center  h-12 m-auto p-0" key={ header.id }>
+                                                { header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext()
+                                                    ) }
+                                            </TableHead>
+                                        );
+                                    }) }
+                                </TableRow>
+                            )) }
+                        </TableHeader>
+                        <TableBody>
+                            { table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) =>
                                 {
                                     return (
-                                        <TableHead className="text-center  h-12 m-auto p-0" key={ header.id }>
-                                            { header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                ) }
-                                        </TableHead>
+                                        <Fragment key={ row.id }>
+                                            <TableRow  >
+                                                {/* first row is a normal row */ }
+                                                { row.getVisibleCells().map(cell =>
+                                                {
+                                                    return (
+                                                        <TableCell className="w-32" key={ cell.id }>
+                                                            { flexRender(
+                                                                cell.column.columnDef.cell,
+                                                                cell.getContext()
+                                                            ) }
+                                                        </TableCell>
+                                                    );
+                                                }) }
+                                            </TableRow>
+
+                                        </Fragment>
                                     );
-                                }) }
-                            </TableRow>
-                        )) }
-                    </TableHeader>
-                    <TableBody>
-                        { table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) =>
-                            {
-                                return (
-                                    <Fragment key={ row.id }>
-                                        <TableRow  >
-                                            {/* first row is a normal row */ }
-                                            { row.getVisibleCells().map(cell =>
-                                            {
-                                                return (
-                                                    <TableCell className="w-32" key={ cell.id }>
-                                                        { flexRender(
-                                                            cell.column.columnDef.cell,
-                                                            cell.getContext()
-                                                        ) }
-                                                    </TableCell>
-                                                );
-                                            }) }
-                                        </TableRow>
+                                })
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={ columns.length } className="h-24 text-center m-auto ">
+                                        لم نجد أي نتائج.
+                                    </TableCell>
+                                </TableRow>
+                            ) }
+                        </TableBody>
+                    </Table >
 
-                                    </Fragment>
-                                );
-                            })
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={ columns.length } className="h-24 text-center m-auto ">
-                                    لم نجد أي نتائج.
-                                </TableCell>
-                            </TableRow>
-                        ) }
-                    </TableBody>
-                </Table >
+                    {
+                        data?.length !== undefined && data?.length > 10 && (
+
+                            <DataTablePagination table={ table } />
+                        )
+                    }
+
+                    {/* <DataTablePagination table={ table } /> */ }
+                </div >
+                {
+                    table.getSelectedRowModel().flatRows.length > 0 ? (
+                        <div className="flex justify-center">
+                            <Button type="button" onClick={ () => handleUpdateChanges(rowData) }>حفظ جميع التغييرات</Button>
+                        </div>
+                    ) : (
 
 
-                {/* <DataTablePagination table={ table } /> */ }
+
+                        <div className="flex gap-6 w-full justify-center">
+
+                            <Dialog open={ open } onOpenChange={ setOpen } >
+
+                                <DialogTrigger asChild>
+                                    <Button type="button">
+                                        إضافة قطعة
+                                    </Button>
+
+
+                                </DialogTrigger>
+                                <DialogContent className="bg-zinc-50 w-4/12 px-16 py-8">
+                                    <AddItemsForm setOpen={ setOpen } jobId={ jobId } />
+                                </DialogContent>
+                            </Dialog>
+
+                        </div>
+
+                    )
+                }
             </div >
-            {
-                table.getSelectedRowModel().flatRows.length > 0 ? (
-                    <div className="flex justify-center">
-                        <Button type="button" onClick={ () => handleUpdateChanges(rowData) }>حفظ جميع التغييرات</Button>
-                    </div>
-                ) : (
-
-
-
-                    <div className="flex gap-6 w-full justify-center">
-
-                        <Dialog open={ open } onOpenChange={ setOpen } >
-
-                            <DialogTrigger asChild>
-                                <Button type="button">
-                                    إضافة قطعة
-                                </Button>
-
-
-                            </DialogTrigger>
-                            <DialogContent className="bg-zinc-50 w-4/12 px-16 py-8">
-                                <AddItemsForm setOpen={ setOpen } jobId={ jobId } />
-                            </DialogContent>
-                        </Dialog>
-
-                    </div>
-
-                )
-            }
-        </div >
-
+        </>
     );
 }
 

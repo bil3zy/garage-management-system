@@ -1,4 +1,3 @@
-import { Items } from "@prisma/client";
 import { ItemsModel } from "prisma/zod";
 import { z } from "zod";
 
@@ -10,6 +9,23 @@ import
 } from "~/server/api/trpc";
 
 export const itemRouter = createTRPCRouter({
+    findByJobId: protectedProcedure
+        .input(z.object({ jobId: z.string() }))
+        .query(async ({ ctx, input }) =>
+        {
+            const items = await ctx.db.items.findMany({
+                where: {
+                    jobId: input.jobId
+                }
+            }).then((res) =>
+            {
+                return res;
+            }).catch((err) =>
+            {
+                console.log(err);
+            });
+            return items;
+        }),
     hello: publicProcedure
         .input(z.object({ text: z.string() }))
         .query(({ input }) =>

@@ -202,7 +202,7 @@ export const columns: ColumnDef<any, any>[] = [
                     status: row.original.status,
                 });
             };
-            console.log(row);
+            // console.log(row);
             return (
                 <>
 

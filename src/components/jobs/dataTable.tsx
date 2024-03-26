@@ -43,7 +43,7 @@ import { SubComponent } from "./SubComponent";
 import { subComponentColumns } from "./subComponentColumns";
 import { SortingState } from "@tanstack/react-table";
 import { getSortedRowModel } from "@tanstack/react-table";
-import { RouterOutputs } from "~/utils/api";
+import { RouterOutputs, api } from "~/utils/api";
 import { Input } from "../ui/input";
 import { useRouter } from "next/router";
 
@@ -82,6 +82,7 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
     const [isOpen, setIsOpen] = React.useState(false);
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [updatedRow, setUpdatedRow] = useState<boolean>(false);
+
 
 
     useEffect(() =>
@@ -186,23 +187,9 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
                 </div>
 
                 <div className="flex gap-6">
-
-                    {/* <DeleteManyStudents table={ table } /> */ }
-                    {/* <Dialog open={ open } onOpenChange={ setOpen }> */ }
-
-                    {/* <DialogTrigger asChild> */ }
                     <Button onClick={ () => router.push('/new-client') }>
                         إضافة
                     </Button>
-
-
-                    {/* </DialogTrigger> */ }
-                    {/* <DialogContent> */ }
-
-                    {/* </DialogContent> */ }
-                    {/* </Dialog> */ }
-
-
                 </div>
             </div>
             <div className="border rounded-md m-8">
@@ -251,9 +238,8 @@ export function DataTable<TData extends NonNullable<RouterOutputs["jobs"]["findA
                                         </TableRow>
                                         { row.getIsExpanded() && (
                                             <TableRow>
-                                                {/* 2nd row is a custom 1 cell row */ }
                                                 <TableCell colSpan={ row.getVisibleCells().length }>
-                                                    <SubComponent job={ row.original } jobId={ row.original?.id } data={ (row.original as any).subRows.items as any } columns={ subComponentColumns } />
+                                                    <SubComponent job={ row.original } jobId={ row.original.id ?? "" } columns={ subComponentColumns } />
                                                 </TableCell>
                                             </TableRow>
                                         ) }
